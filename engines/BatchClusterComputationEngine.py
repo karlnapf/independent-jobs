@@ -73,7 +73,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
             time.sleep(1)
         
         lines = []
-        lines.append("from independent_jobs.engines.BatchClusterComputationEngine import Dispatcher")
+        lines.append("from engines.BatchClusterComputationEngine import Dispatcher")
         lines.append("filename=\"%s\"" % job_filename)
         lines.append("Dispatcher.dispatch(filename)")
         
