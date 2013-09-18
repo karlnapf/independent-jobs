@@ -8,10 +8,9 @@ Written (W) 2013 Heiko Strathmann
 """
 import logging
 
-logging.basicConfig(format='%(levelname)s: %(asctime)s: %(module)s.%(funcName)s() \"%(message)s\"',
-                    level=logging.INFO)
-        
-class Logger(object):
+class Log(object):
+    level_set = False
+    
     @staticmethod
     def info(message):
         logging.info(message)
@@ -22,5 +21,10 @@ class Logger(object):
         
     @staticmethod
     def set_loglevel(loglevel):
-        logging.basicConfig(level=loglevel)
-        
+        logging.getLogger().setLevel(loglevel)
+
+if not Log.level_set:
+    logging.basicConfig(format='%(levelname)s: %(asctime)s: %(module)s.%(funcName)s() \"%(message)s\"',
+                        level=logging.INFO)
+    logging.info("Global logger initialised")
+    Log.level_set = True
