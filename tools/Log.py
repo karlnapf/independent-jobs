@@ -24,7 +24,7 @@ class Log(object):
         logging.getLogger().setLevel(loglevel)
 
 if not Log.level_set:
-    logging.basicConfig(format='%(levelname)s: %(asctime)s: %(module)s.%(funcName)s() \"%(message)s\"',
+    logging.basicConfig(format='%(levelname)s: %(asctime)s: %(module)s.%(funcName)s(): %(message)s',
                         level=logging.INFO)
     logging.info("Global logger initialised")
     Log.level_set = True
