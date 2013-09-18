@@ -12,20 +12,13 @@ class Log(object):
     level_set = False
     
     @staticmethod
-    def info(message):
-        logging.info(message)
-        
-    @staticmethod
-    def debug(message):
-        logging.debug(message)
-        
-    @staticmethod
     def set_loglevel(loglevel):
         logging.getLogger().setLevel(loglevel)
         logging.info("Set loglevel to %d" % loglevel)
 
 if not Log.level_set:
-    logging.basicConfig(format='%(levelname)s: %(asctime)s: %(module)s.%(funcName)s(): %(message)s')
-    logging.info("Global logger initialised")
-    Log.set_loglevel(logging.INFO)
+    level = logging.INFO
+    logging.basicConfig(format='%(levelname)s: %(asctime)s: %(module)s.%(funcName)s(): %(message)s',
+                        level=level)
+    logging.info("Global logger initialised with loglevel %d" % level)
     Log.level_set = True

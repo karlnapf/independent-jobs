@@ -12,8 +12,8 @@ from engines.IndependentComputationEngine import IndependentComputationEngine
 from os import makedirs
 from popen2 import popen2
 from tools.FileSystem import FileSystem
-from tools.Log import Log
 from tools.Serialization import Serialization
+import logging
 import os
 import time
 
@@ -57,7 +57,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         # try to create folder if not yet exists
         job_filename = self.get_job_filename(job_name)
-        Log.info("Creating job with file %s" % job_filename)
+        logging.info("Creating job with file %s" % job_filename)
         try:
             makedirs(job_folder)
         except OSErrorLogger:
@@ -134,7 +134,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                 
                 # do not wait again for finished jobs
                 if not job_finished:
-                    Log.info("waiting for %s" % job_name)
+                    logging.info("waiting for %s" % job_name)
                 
                     # wait until file exists (dangerous, so have a maximum waiting time
                     # after which old job is discarded and replacement is submitted)
@@ -151,8 +151,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                         waited_for = time.time() - waiting_start
                         if waited_for > self.batch_parameters.max_walltime:
                             new_job_name = self.create_job_name()
-                            Log.info("%s exceeded maximum waiting time of %d" % (job_name, self.batch_parameters.max_walltime))
-                            Log.info("Re-submitting under name %s" % new_job_name)
+                            logging.info("%s exceeded maximum waiting time of %d" % (job_name, self.batch_parameters.max_walltime))
+                            logging.info("Re-submitting under name %s" % new_job_name)
 
                             # remove from submitted list to not wait anymore and
                             # change job name
@@ -168,7 +168,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                             # infinite loop and start again
                             break
             
-        Log.info("All jobs finished.")
+        logging.info("All jobs finished.")
 
         # reset internal list for new submission round
         self.submitted_aggregator_filenames = []

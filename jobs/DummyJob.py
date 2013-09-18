@@ -10,7 +10,7 @@ from jobs.IndependentJob import IndependentJob
 from numpy.random import randint
 from results.ScalarResult import ScalarResult
 from time import sleep
-from tools.Log import Log
+import logging
 
 class DummyJob(IndependentJob):
     def __init__(self, aggregator, sleep_time):
@@ -25,7 +25,7 @@ class DummyJob(IndependentJob):
         else:
             sleep_time = randint(10)
             
-        Log.info("Sleeping for %d" % sleep_time)
+        logging.info("Sleeping for %d" % sleep_time)
         sleep(sleep_time)
             
         self.aggregator.submit_result(result)
