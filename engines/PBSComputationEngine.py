@@ -11,17 +11,17 @@ import os
 import time
 
 class PBSComputationEngine(BatchClusterComputationEngine):
-    def __init__(self, pbs_parameters, check_interval=10):
-        BatchClusterComputationEngine.__init__(self, pbs_parameters, check_interval)
+    def __init__(self, batch_parameters, check_interval=10):
+        BatchClusterComputationEngine.__init__(self, batch_parameters, check_interval)
 
     def create_batch_script(self, job_name, dispatcher_string):
         command = "nice -n 10 " + dispatcher_string
         
-        walltime = time.strftime('%H:%M:%S', time.gmtime(self.pbs_parameters.max_walltime))
+        walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
         walltime = "walltime=" + walltime
         
-        num_nodes = "nodes=1:ppn=" + str(self.pbs_parameters.nodes)
-        memory = "pmem=" + str(self.pbs_parameters.memory) + "gb"
+        num_nodes = "nodes=1:ppn=" + str(self.batch_parameters.nodes)
+        memory = "pmem=" + str(self.batch_parameters.memory) + "gb"
         workdir = self.get_job_foldername(job_name)
         
         output = workdir + os.sep + "output.txt"

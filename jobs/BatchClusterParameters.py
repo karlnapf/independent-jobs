@@ -6,12 +6,14 @@ the Free Software Foundation; either version 3 of the License, or
 
 Written (W) 2013 Heiko Strathmann
 """
+import logging
 
-class PBSParameters(object):
+class BatchClusterParameters(object):
     def __init__(self, foldername="", job_name_base="job_", \
-                 max_walltime=3600, nodes=1, memory=1):
+                 max_walltime=3600, nodes=1, memory=1, loglevel=logging.INFO):
         self.foldername = foldername
         self.job_name_base = job_name_base
         self.max_walltime = max_walltime
         self.nodes = nodes
         self.memory = memory
+        self.loglevel = loglevel

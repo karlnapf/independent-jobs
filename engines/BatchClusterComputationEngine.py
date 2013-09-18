@@ -12,8 +12,8 @@ from engines.IndependentComputationEngine import IndependentComputationEngine
 from os import makedirs
 from popen2 import popen2
 from tools.FileSystem import FileSystem
-from tools.Serialization import Serialization
 from tools.Log import Log
+from tools.Serialization import Serialization
 import os
 import time
 
@@ -24,10 +24,10 @@ class Dispatcher(object):
         job.compute()
 
 class BatchClusterComputationEngine(IndependentComputationEngine):
-    def __init__(self, pbs_parameters, check_interval=10):
+    def __init__(self, batch_parameters, check_interval=10):
         IndependentComputationEngine.__init__(self)
         
-        self.pbs_parameters = pbs_parameters
+        self.batch_parameters = batch_parameters
         self.check_interval = check_interval
         
         self.submitted_job_map = {}
@@ -38,7 +38,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         return os.sep.join([job_folder, "aggregator.bin"])
     
     def get_job_foldername(self, job_name):
-        return os.sep.join([self.pbs_parameters.foldername, job_name])
+        return os.sep.join([self.batch_parameters.foldername, job_name])
     
     def get_job_filename(self, job_name):
         return os.sep.join([self.get_job_foldername(job_name), "job.bin"])
@@ -75,6 +75,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         lines = []
         lines.append("from engines.BatchClusterComputationEngine import Dispatcher")
+        lines.append("from tools.Log import Log")
+        lines.append("Log.set_loglevel(%d)" % self.batch_parameters.loglevel)
         lines.append("filename=\"%s\"" % job_filename)
         lines.append("Dispatcher.dispatch(filename)")
         
@@ -98,7 +100,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         f.close()
     
     def create_job_name(self):
-        return FileSystem.get_unique_filename(self.pbs_parameters.job_name_base)
+        return FileSystem.get_unique_filename(self.batch_parameters.job_name_base)
     
     def submit_job(self, job):
         # replace job's wrapped_aggregator by PBS wrapped_aggregator to allow
@@ -147,9 +149,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                         
                         # check whether maximum waiting time is over and re-submit if is
                         waited_for = time.time() - waiting_start
-                        if waited_for > self.pbs_parameters.max_walltime:
+                        if waited_for > self.batch_parameters.max_walltime:
                             new_job_name = self.create_job_name()
-                            Log.info("%s exceeded maximum waiting time of %d" % (job_name, self.pbs_parameters.max_walltime))
+                            Log.info("%s exceeded maximum waiting time of %d" % (job_name, self.batch_parameters.max_walltime))
                             Log.info("Re-submitting under name %s" % new_job_name)
 
                             # remove from submitted list to not wait anymore and

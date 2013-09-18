@@ -9,7 +9,7 @@ Written (W) 2013 Heiko Strathmann
 from aggregators.ScalarResultAggregator import ScalarResultAggregator
 from engines.SGEComputationEngine import SGEComputationEngine
 from jobs.DummyJob import DummyJob
-from jobs.PBSParameters import PBSParameters
+from jobs.BatchClusterParameters import BatchClusterParameters
 from numpy.random import randint
 from os.path import expanduser
 import os
@@ -53,8 +53,8 @@ class DummyJobTests(unittest.TestCase):
             shutil.rmtree(folder)
         except OSError:
             pass
-        pbs_parameters = PBSParameters(foldername=folder)
-        engine = SGEComputationEngine(pbs_parameters, check_interval=1)
+        batch_parameters = BatchClusterParameters(foldername=folder)
+        engine = SGEComputationEngine(batch_parameters, check_interval=1)
         num_submissions = 3
         sleep_times = randint(0, 3, num_submissions)
         self.engine_tester(engine, sleep_times)

@@ -11,16 +11,16 @@ import os
 import time
 
 class SGEComputationEngine(BatchClusterComputationEngine):
-    def __init__(self, pbs_parameters, check_interval=10):
-        BatchClusterComputationEngine.__init__(self, pbs_parameters, check_interval)
+    def __init__(self, batch_parameters, check_interval=10):
+        BatchClusterComputationEngine.__init__(self, batch_parameters, check_interval)
 
     def create_batch_script(self, job_name, dispatcher_string):
         command = dispatcher_string
         
-        walltime = time.strftime('%H:%M:%S', time.gmtime(self.pbs_parameters.max_walltime))
+        walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
         walltime = walltime
         
-        memory = str(self.pbs_parameters.memory) + "G"
+        memory = str(self.batch_parameters.memory) + "G"
         workdir = self.get_job_foldername(job_name)
         
         output = workdir + os.sep + "output.txt"
