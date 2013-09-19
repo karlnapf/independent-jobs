@@ -26,15 +26,15 @@ class SGEComputationEngine(BatchClusterComputationEngine):
         output = workdir + os.sep + "output.txt"
         error = workdir + os.sep + "error.txt"
 
-        job_string = """
-#$ -S /bin/bash
-source ~/.bash_profile
+        job_string = \
+"""#$ -S /bin/bash
 #$ -N %s
 #$ -l h_rt=%s
 #$ -l h_vmem=%s,tmem=%s
 #$ -o %s
 #$ -e %s
 #$ -wd %s
+source ~/.bash_profile
 %s""" % (job_name, walltime, memory, memory, output, error, workdir, command)
         
         return job_string
