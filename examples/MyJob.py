@@ -25,6 +25,7 @@ class MyJob(IndependentJob):
         # of ScalarResult, which is a provided sub-class of JobResult
         sleep_time = randint(10)
         
+        logging.info("sleeping for %d seconds" % sleep_time)
         sleep(sleep_time)
         
         # create ScalarResult instance
