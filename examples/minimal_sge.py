@@ -1,41 +1,26 @@
+"""
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+Written (W) 2013 Heiko Strathmann
+"""
+
 from aggregators.ScalarResultAggregator import ScalarResultAggregator
 from engines.BatchClusterParameters import BatchClusterParameters
 from engines.SGEComputationEngine import SGEComputationEngine
 from engines.SerialComputationEngine import SerialComputationEngine
-from jobs.IndependentJob import IndependentJob
+from examples.MyJob import MyJob
 from numpy.ma.core import zeros
 from os.path import expanduser
-from results.ScalarResult import ScalarResult
-from time import sleep
 from tools.Log import Log
 import logging
 import os
 
-# Define our custom Job, which inherits from base class IndependentJob
-class MyJob(IndependentJob):
-    def __init__(self, aggregator):
-        IndependentJob.__init__(self, aggregator)
-    
-    # we need to define the abstract compute method. It has to return an instance
-    # of JobResult base class
-    def compute(self):
-        logging.info("computing")
-        # job is to sleep for some time and return this time as an instance
-        # of ScalarResult, which is a provided sub-class of JobResult
-        sleep_time = 3
-        
-        sleep(sleep_time)
-        
-        # create ScalarResult instance
-        result = ScalarResult(sleep_time)
-        
-        # submit the result to my own aggregator
-        self.aggregator.submit_result(result)
-    
-    
+# See other file for implementation of MyJob
 # Since we are using ScalarResult, we can use the already implemented aggregator
 # ScalarResultAggregator
-
 
 if __name__ == '__main__':
     Log.set_loglevel(logging.INFO)
