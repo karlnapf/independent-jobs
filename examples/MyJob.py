@@ -8,8 +8,9 @@ Written (W) 2013 Heiko Strathmann
 """
 from jobs.IndependentJob import IndependentJob
 from results.ScalarResult import ScalarResult
-import logging
 from time import sleep
+import logging
+from numpy.random import randint
 
 # Define our custom Job, which inherits from base class IndependentJob
 class MyJob(IndependentJob):
@@ -22,7 +23,7 @@ class MyJob(IndependentJob):
         logging.info("computing")
         # job is to sleep for some time and return this time as an instance
         # of ScalarResult, which is a provided sub-class of JobResult
-        sleep_time = 3
+        sleep_time = randint(10)
         
         sleep(sleep_time)
         
@@ -31,3 +32,5 @@ class MyJob(IndependentJob):
         
         # submit the result to my own aggregator
         self.aggregator.submit_result(result)
+        logging.info("done computing")
+        
