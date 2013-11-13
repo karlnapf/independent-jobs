@@ -65,9 +65,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         Serialization.serialize_object(wrapped_job, job_filename)
         
-        # allow the FS to process things        
-        while not FileSystem.file_exists_new_shell(job_filename):
-            time.sleep(1)
+        # allow the FS and queue to process things        
+        time.sleep(.5)
         
         # wait until FS says that the file exists
         while not FileSystem.file_exists_new_shell(job_filename):
