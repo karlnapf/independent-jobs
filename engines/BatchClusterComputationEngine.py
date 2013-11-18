@@ -60,7 +60,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         logging.info("Creating job with file %s" % job_filename)
         try:
             makedirs(job_folder)
-        except OSErrorLogger:
+        except OSError:
             pass
         
         Serialization.serialize_object(wrapped_job, job_filename)
