@@ -18,7 +18,6 @@ class SGEComputationEngine(BatchClusterComputationEngine):
         command = dispatcher_string
         
         walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
-        walltime = walltime
         
         memory = str(self.batch_parameters.memory) + "G"
         workdir = self.get_job_foldername(job_name)
