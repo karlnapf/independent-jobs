@@ -26,15 +26,17 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
-from aggregators.ScalarResultAggregator import ScalarResultAggregator
-from engines.SGEComputationEngine import SGEComputationEngine
-from jobs.DummyJob import DummyJob
-from jobs.BatchClusterParameters import BatchClusterParameters
 from numpy.random import randint
-from os.path import expanduser
 import os
+from os.path import expanduser
 import shutil
 import unittest
+
+from aggregators.ScalarResultAggregator import ScalarResultAggregator
+from engines.BatchClusterParameters import BatchClusterParameters
+from engines.SGEComputationEngine import SGEComputationEngine
+from jobs.DummyJob import DummyJob
+
 
 class DummyComputation(object):
     def __init__(self, engine):
