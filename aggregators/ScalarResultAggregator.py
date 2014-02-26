@@ -20,4 +20,7 @@ class ScalarResultAggregator(JobResultAggregator):
     
     def get_final_result(self):
         return self.result
+    
+    def clean_up(self):
+        pass
 

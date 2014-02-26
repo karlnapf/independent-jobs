@@ -24,4 +24,8 @@ class JobResultAggregator(object):
     @abstractmethod
     def get_final_result(self):
         raise NotImplementedError()
+    
+    @abstractmethod
+    def clean_up(self):
+        raise NotImplementedError()
 

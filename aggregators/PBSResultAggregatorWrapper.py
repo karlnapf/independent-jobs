@@ -6,8 +6,12 @@ the Free Software Foundation; either version 3 of the License, or
 
 Written (W) 2013 Heiko Strathmann
 """
-from aggregators.JobResultAggregator import JobResultAggregator
+import os
 from pickle import dump, load
+
+from aggregators.JobResultAggregator import JobResultAggregator
+from tools.FileSystem import FileSystem
+
 
 class PBSResultAggregatorWrapper(JobResultAggregator):
     def __init__(self, wrapped_aggregator, filename):
@@ -45,3 +49,6 @@ class PBSResultAggregatorWrapper(JobResultAggregator):
         
         # return previously loaded finalised result
         return self.wrapped_aggregator.get_final_result()
+
+    def clean_up(self):
+        FileSystem.delete_dir_failsafe(os.sep.join(self.filename.split(os.sep)[:-1]))
