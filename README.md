@@ -3,4 +3,4 @@ independent-jobs
 
 Python framework for independent computation with backends for batch clusters
 
-Written (W) 2013 Heiko Strathmann under GPL3
+Written (W) 2013-2014 Heiko Strathmann
