@@ -36,6 +36,7 @@ from aggregators.ScalarResultAggregator import ScalarResultAggregator
 from engines.BatchClusterParameters import BatchClusterParameters
 from engines.SGEComputationEngine import SGEComputationEngine
 from jobs.DummyJob import DummyJob
+from tools.FileSystem import FileSystem
 
 
 class DummyComputation(object):
@@ -64,9 +65,13 @@ class DummyJobTests(unittest.TestCase):
         for i in range(num_submissions):
             aggregators[i].finalize()
             results.append(aggregators[i].get_final_result().result)
+            aggregators[i].clean_up()
             
         for i in range(num_submissions):
             self.assertEqual(results[i], sleep_times[i])
+            
+        for i in range(num_submissions):
+            self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
     def test_sge_engine(self):
         home = expanduser("~")
