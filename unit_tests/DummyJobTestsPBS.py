@@ -26,15 +26,18 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
-from aggregators.ScalarResultAggregator import ScalarResultAggregator
-from engines.PBSComputationEngine import PBSComputationEngine
-from jobs.DummyJob import DummyJob
-from jobs.BatchClusterParameters import BatchClusterParameters
 from numpy.random import randint
-from os.path import expanduser
 import os
+from os.path import expanduser
 import shutil
 import unittest
+
+from aggregators.ScalarResultAggregator import ScalarResultAggregator
+from engines.PBSComputationEngine import PBSComputationEngine
+from jobs.BatchClusterParameters import BatchClusterParameters
+from jobs.DummyJob import DummyJob
+from tools.FileSystem import FileSystem
+
 
 class DummyComputation(object):
     def __init__(self, engine):
@@ -62,9 +65,13 @@ class DummyJobTests(unittest.TestCase):
         for i in range(num_submissions):
             aggregators[i].finalize()
             results.append(aggregators[i].get_final_result().result)
+            aggregators[i].clean_up()
             
         for i in range(num_submissions):
             self.assertEqual(results[i], sleep_times[i])
+            
+        for i in range(num_submissions):
+            self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
     def test_pbs_engine_max_waiting_time(self):
         home = expanduser("~")
