@@ -34,7 +34,7 @@ from tools.FileSystem import FileSystem
 
 
 class PBSResultAggregatorWrapper(JobResultAggregator):
-    def __init__(self, wrapped_aggregator, filename, clean_up = False):
+    def __init__(self, wrapped_aggregator, filename, do_clean_up = False):
         self.wrapped_aggregator = wrapped_aggregator
         self.filename = filename
         
@@ -42,7 +42,7 @@ class PBSResultAggregatorWrapper(JobResultAggregator):
         self.result_counter = 0
         
         # whether to delete job output
-        self.clean_up = clean_up
+        self.do_clean_up = do_clean_up
     
     def submit_result(self, result):
         # NOTE: this happens on the PBS
@@ -74,5 +74,5 @@ class PBSResultAggregatorWrapper(JobResultAggregator):
         return self.wrapped_aggregator.get_final_result()
 
     def clean_up(self):
-        if self.clean_up:
+        if self.do_clean_up:
             FileSystem.delete_dir_failsafe(os.sep.join(self.filename.split(os.sep)[:-1]))

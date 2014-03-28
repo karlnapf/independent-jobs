@@ -44,12 +44,12 @@ class Dispatcher(object):
         job.compute()
 
 class BatchClusterComputationEngine(IndependentComputationEngine):
-    def __init__(self, batch_parameters, check_interval=10, clean_up = False):
+    def __init__(self, batch_parameters, check_interval=10, do_clean_up = False):
         IndependentComputationEngine.__init__(self)
         
         self.batch_parameters = batch_parameters
         self.check_interval = check_interval
-        self.clean_up = clean_up
+        self.do_clean_up = do_clean_up
         
         self.submitted_job_map = {}
         self.submitted_job_counter = 0
@@ -137,7 +137,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         aggregator_filename = self.get_aggregator_filename(job_name)
         job.aggregator = PBSResultAggregatorWrapper(job.aggregator,
                                                     aggregator_filename,
-                                                    self.clean_up)
+                                                    self.do_clean_up)
         
         self.submit_wrapped_pbs_job(job, job_name)
         
