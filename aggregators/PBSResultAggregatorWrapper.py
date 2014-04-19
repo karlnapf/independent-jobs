@@ -34,9 +34,10 @@ from tools.FileSystem import FileSystem
 
 
 class PBSResultAggregatorWrapper(JobResultAggregator):
-    def __init__(self, wrapped_aggregator, filename, do_clean_up = False):
+    def __init__(self, wrapped_aggregator, filename, job_name, do_clean_up = False):
         self.wrapped_aggregator = wrapped_aggregator
         self.filename = filename
+        self.job_name = job_name
         
         # to keep track of all submitted results
         self.result_counter = 0

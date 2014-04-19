@@ -137,6 +137,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         aggregator_filename = self.get_aggregator_filename(job_name)
         job.aggregator = PBSResultAggregatorWrapper(job.aggregator,
                                                     aggregator_filename,
+                                                    job_name,
                                                     self.do_clean_up)
         
         self.submit_wrapped_pbs_job(job, job_name)
