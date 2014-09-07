@@ -26,7 +26,8 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
-from results.JobResult import JobResult
+from independent_jobs.results.JobResult import JobResult
+
 
 class SingleResult(JobResult):
     def __init__(self, result):

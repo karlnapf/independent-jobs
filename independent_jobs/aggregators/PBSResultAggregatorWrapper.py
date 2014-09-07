@@ -29,8 +29,8 @@ either expressed or implied, of the author.
 import os
 from pickle import dump, load
 
-from aggregators.JobResultAggregator import JobResultAggregator
-from tools.FileSystem import FileSystem
+from independent_jobs.aggregators.JobResultAggregator import JobResultAggregator
+from independent_jobs.tools.FileSystem import FileSystem
 
 
 class PBSResultAggregatorWrapper(JobResultAggregator):

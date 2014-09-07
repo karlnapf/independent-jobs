@@ -26,15 +26,34 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
-from engines.IndependentComputationEngine import IndependentComputationEngine
+import logging
+from numpy.random import randint
+from time import sleep
 
-class SerialComputationEngine(IndependentComputationEngine):
-    def __init__(self):
-        IndependentComputationEngine.__init__(self)
+from independent_jobs.jobs.IndependentJob import IndependentJob
+from independent_jobs.results.ScalarResult import ScalarResult
+
+
+# Define our custom Job, which inherits from base class IndependentJob
+class MyJob(IndependentJob):
+    def __init__(self, aggregator):
+        IndependentJob.__init__(self, aggregator)
     
-    def submit_job(self, job):
-        job.compute()
-        return job.aggregator
-    
-    def wait_for_all(self):
-        pass
+    # we need to define the abstract compute method. It has to return an instance
+    # of JobResult base class
+    def compute(self):
+        logging.info("computing")
+        # job is to sleep for some time and return this time as an instance
+        # of ScalarResult, which is a provided sub-class of JobResult
+        sleep_time = randint(10)
+        
+        logging.info("sleeping for %d seconds" % sleep_time)
+        sleep(sleep_time)
+        
+        # create ScalarResult instance
+        result = ScalarResult(sleep_time)
+        
+        # submit the result to my own aggregator
+        self.aggregator.submit_result(result)
+        logging.info("done computing")
+        

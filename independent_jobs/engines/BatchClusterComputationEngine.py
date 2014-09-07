@@ -27,15 +27,17 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
 from abc import abstractmethod
-from aggregators.PBSResultAggregatorWrapper import PBSResultAggregatorWrapper
-from engines.IndependentComputationEngine import IndependentComputationEngine
-from os import makedirs
-from popen2 import popen2
-from tools.FileSystem import FileSystem
-from tools.Serialization import Serialization
 import logging
+from os import makedirs
 import os
+from popen2 import popen2
 import time
+
+from independent_jobs.aggregators.PBSResultAggregatorWrapper import PBSResultAggregatorWrapper
+from independent_jobs.engines.IndependentComputationEngine import IndependentComputationEngine
+from independent_jobs.tools.FileSystem import FileSystem
+from independent_jobs.tools.Serialization import Serialization
+
 
 class Dispatcher(object):
     @staticmethod

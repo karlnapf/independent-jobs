@@ -32,11 +32,11 @@ from os.path import expanduser
 import shutil
 import unittest
 
-from aggregators.ScalarResultAggregator import ScalarResultAggregator
-from engines.PBSComputationEngine import PBSComputationEngine
-from jobs.BatchClusterParameters import BatchClusterParameters
-from jobs.DummyJob import DummyJob
-from tools.FileSystem import FileSystem
+from independent_jobs.aggregators.ScalarResultAggregator import ScalarResultAggregator
+from independent_jobs.engines.BatchClusterParameters import BatchClusterParameters
+from independent_jobs.engines.SGEComputationEngine import SGEComputationEngine
+from independent_jobs.jobs.DummyJob import DummyJob
+from independent_jobs.tools.FileSystem import FileSystem
 
 
 class DummyComputation(object):
@@ -73,28 +73,15 @@ class DummyJobTests(unittest.TestCase):
         for i in range(num_submissions):
             self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
-    def test_pbs_engine_max_waiting_time(self):
+    def test_sge_engine(self):
         home = expanduser("~")
-        folder = os.sep.join([home, "unit_test_dummy_pbs_result_max_wait"])
-        
-        try:
-            shutil.rmtree(folder)
-        except OSError:
-            pass
-        batch_parameters = BatchClusterParameters(foldername=folder, max_walltime=8)
-        engine = PBSComputationEngine(batch_parameters, check_interval=1)
-        sleep_times = [2, -1]
-        self.engine_tester(engine, sleep_times)
-        
-    def test_pbs_engine(self):
-        home = expanduser("~")
-        folder = os.sep.join([home, "unit_test_pbs_dummy_result"])
+        folder = os.sep.join([home, "unit_test_sge_dummy_result"])
         try:
             shutil.rmtree(folder)
         except OSError:
             pass
         batch_parameters = BatchClusterParameters(foldername=folder)
-        engine = PBSComputationEngine(batch_parameters, check_interval=1)
+        engine = SGEComputationEngine(batch_parameters, check_interval=1)
         num_submissions = 3
         sleep_times = randint(0, 3, num_submissions)
         self.engine_tester(engine, sleep_times)

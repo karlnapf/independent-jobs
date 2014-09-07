@@ -27,21 +27,22 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
 
-from aggregators.ScalarResultAggregator import ScalarResultAggregator
-from engines.BatchClusterParameters import BatchClusterParameters
-from engines.SGEComputationEngine import SGEComputationEngine
-from engines.SerialComputationEngine import SerialComputationEngine
-from examples.MyJob import MyJob
-from numpy.ma.core import zeros
-from os.path import expanduser
-from tools.Log import Log
 import logging
+from numpy.ma.core import zeros
 import os
+from os.path import expanduser
+
+from independent_jobs.aggregators.ScalarResultAggregator import ScalarResultAggregator
+from independent_jobs.engines.BatchClusterParameters import BatchClusterParameters
+from independent_jobs.engines.SGEComputationEngine import SGEComputationEngine
+from independent_jobs.engines.SerialComputationEngine import SerialComputationEngine
+from independent_jobs.examples.MyJob import MyJob
+from independent_jobs.tools.Log import Log
+
 
 # See other file for implementation of MyJob
 # Since we are using ScalarResult, we can use the already implemented aggregator
 # ScalarResultAggregator
-
 if __name__ == '__main__':
     Log.set_loglevel(logging.INFO)
     logging.info("start")

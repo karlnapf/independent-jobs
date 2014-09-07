@@ -26,26 +26,36 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
-from jobs.IndependentJob import IndependentJob
-from numpy.random import randint
-from results.ScalarResult import ScalarResult
-from time import sleep
-import logging
+import os
+import time
 
-class DummyJob(IndependentJob):
-    def __init__(self, aggregator, sleep_time):
-        IndependentJob.__init__(self, aggregator)
-        self.sleep_time = sleep_time
-    
-    def compute(self):
-        result = ScalarResult(self.sleep_time)
+from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
+
+
+class SGEComputationEngine(BatchClusterComputationEngine):
+    def __init__(self, batch_parameters, check_interval=10):
+        BatchClusterComputationEngine.__init__(self, batch_parameters, check_interval)
+
+    def create_batch_script(self, job_name, dispatcher_string):
+        command = dispatcher_string
         
-        if self.sleep_time >= 0:
-            sleep_time = self.sleep_time
-        else:
-            sleep_time = randint(10)
-            
-        logging.info("Sleeping for %d" % sleep_time)
-        sleep(sleep_time)
-            
-        self.aggregator.submit_result(result)
+        walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
+        
+        memory = str(self.batch_parameters.memory) + "G"
+        workdir = self.get_job_foldername(job_name)
+        
+        output = workdir + os.sep + "output.txt"
+        error = workdir + os.sep + "error.txt"
+
+        job_string = \
+"""#$ -S /bin/bash
+#$ -N %s
+#$ -l h_rt=%s
+#$ -l h_vmem=%s,tmem=%s
+#$ -o %s
+#$ -e %s
+#$ -wd %s
+source ~/.bash_profile
+%s""" % (job_name, walltime, memory, memory, output, error, workdir, command)
+        
+        return job_string

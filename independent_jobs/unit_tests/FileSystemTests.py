@@ -30,7 +30,7 @@ import os
 import tempfile
 import unittest
 
-from tools.FileSystem import FileSystem
+from independent_jobs.tools.FileSystem import FileSystem
 
 
 class FileSystemTests(unittest.TestCase):

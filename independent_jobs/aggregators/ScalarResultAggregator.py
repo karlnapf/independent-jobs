@@ -26,34 +26,21 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
-from engines.BatchClusterComputationEngine import BatchClusterComputationEngine
-import os
-import time
+from independent_jobs.aggregators.JobResultAggregator import JobResultAggregator
 
-class SGEComputationEngine(BatchClusterComputationEngine):
-    def __init__(self, batch_parameters, check_interval=10):
-        BatchClusterComputationEngine.__init__(self, batch_parameters, check_interval)
+class ScalarResultAggregator(JobResultAggregator):
+    def __init__(self):
+        JobResultAggregator.__init__(self, 1)
+    
+    def finalize(self):
+        pass
+    
+    def submit_result(self, result):
+        self.result = result
+    
+    def get_final_result(self):
+        return self.result
+    
+    def clean_up(self):
+        pass
 
-    def create_batch_script(self, job_name, dispatcher_string):
-        command = dispatcher_string
-        
-        walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
-        
-        memory = str(self.batch_parameters.memory) + "G"
-        workdir = self.get_job_foldername(job_name)
-        
-        output = workdir + os.sep + "output.txt"
-        error = workdir + os.sep + "error.txt"
-
-        job_string = \
-"""#$ -S /bin/bash
-#$ -N %s
-#$ -l h_rt=%s
-#$ -l h_vmem=%s,tmem=%s
-#$ -o %s
-#$ -e %s
-#$ -wd %s
-source ~/.bash_profile
-%s""" % (job_name, walltime, memory, memory, output, error, workdir, command)
-        
-        return job_string

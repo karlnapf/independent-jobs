@@ -27,16 +27,11 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
 from numpy.random import randint
-import os
-from os.path import expanduser
-import shutil
 import unittest
 
-from aggregators.ScalarResultAggregator import ScalarResultAggregator
-from engines.BatchClusterParameters import BatchClusterParameters
-from engines.SGEComputationEngine import SGEComputationEngine
-from jobs.DummyJob import DummyJob
-from tools.FileSystem import FileSystem
+from independent_jobs.aggregators.ScalarResultAggregator import ScalarResultAggregator
+from independent_jobs.engines.SerialComputationEngine import SerialComputationEngine
+from independent_jobs.jobs.DummyJob import DummyJob
 
 
 class DummyComputation(object):
@@ -65,26 +60,14 @@ class DummyJobTests(unittest.TestCase):
         for i in range(num_submissions):
             aggregators[i].finalize()
             results.append(aggregators[i].get_final_result().result)
-            aggregators[i].clean_up()
             
         for i in range(num_submissions):
             self.assertEqual(results[i], sleep_times[i])
-            
-        for i in range(num_submissions):
-            self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
-    def test_sge_engine(self):
-        home = expanduser("~")
-        folder = os.sep.join([home, "unit_test_sge_dummy_result"])
-        try:
-            shutil.rmtree(folder)
-        except OSError:
-            pass
-        batch_parameters = BatchClusterParameters(foldername=folder)
-        engine = SGEComputationEngine(batch_parameters, check_interval=1)
+    def test_serial_engine(self):
         num_submissions = 3
         sleep_times = randint(0, 3, num_submissions)
-        self.engine_tester(engine, sleep_times)
+        self.engine_tester(SerialComputationEngine(), sleep_times)
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
