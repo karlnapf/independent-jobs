@@ -95,7 +95,14 @@ class FileSystemTests(unittest.TestCase):
         # delete and make sure it works
         FileSystem.delete_dir_failsafe(dirname)
         self.assertFalse(os.path.isdir(dirname))
-        
+    
+    def test_cmd_exists_false(self):
+        cmd = "assdjglksdjsdf"
+        self.assertFalse(FileSystem.cmd_exists(cmd))
+    
+    def test_cmd_exists_true(self):
+        cmd = "ls"
+        self.assertTrue(FileSystem.cmd_exists(cmd))
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
