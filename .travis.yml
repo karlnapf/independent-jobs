@@ -1,0 +1,19 @@
+language: python
+python:
+  - "2.7"
+
+virtualenv:
+  system_site_packages: true
+
+notifications:
+  email: false
+
+before_install:
+ - sudo apt-get install -qq python-numpy python-nose
+
+# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+#install:
+# - pip install -r requirements.txt
+
+# command to run tests, e.g. python setup.py test
+script:  export PYTHONPATH=$PYTHONPATH:~/independent-jobs && nosetests
