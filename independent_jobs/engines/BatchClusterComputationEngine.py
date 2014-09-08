@@ -31,6 +31,7 @@ import logging
 from os import makedirs
 import os
 from popen2 import popen2
+import shutil
 import time
 
 from independent_jobs.aggregators.PBSResultAggregatorWrapper import PBSResultAggregatorWrapper
@@ -46,12 +47,17 @@ class Dispatcher(object):
         job.compute()
 
 class BatchClusterComputationEngine(IndependentComputationEngine):
-    def __init__(self, batch_parameters, check_interval=10, do_clean_up = False):
+    def __init__(self, batch_parameters, submission_cmd="qsub", 
+                 check_interval=10, do_clean_up = False):
         IndependentComputationEngine.__init__(self)
         
         self.batch_parameters = batch_parameters
         self.check_interval = check_interval
         self.do_clean_up = do_clean_up
+        self.submission_cmd = submission_cmd
+        # make sure submission command executable is in path
+        if not FileSystem.cmd_exists("qsub"):
+            raise ValueError("Submission command executable \"%s\" not found" % submission_cmd)
         
         self.submitted_job_map = {}
         self.submitted_job_counter = 0
@@ -114,7 +120,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         f = open(job_folder + os.sep + "pbs_script", "w")
         f.write(job_string)
         f.close()
-    
+        
         # send job_string to qsub
         outpipe, inpipe = popen2('qsub')
         inpipe.write(job_string + os.linesep)
@@ -122,6 +128,10 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         job_id = outpipe.read().strip()
         outpipe.close()
+        
+        if job_id == "":
+            raise RuntimeError("Could not parse job_id. Something went wrong with the job submission")
+        
         f = open(job_folder + os.sep + "job_id", 'w')
         f.write(job_id + os.linesep)
         f.close()

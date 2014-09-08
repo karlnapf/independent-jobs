@@ -26,6 +26,7 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
+from nose import SkipTest
 from numpy.random import randint
 import os
 from os.path import expanduser
@@ -38,7 +39,6 @@ from independent_jobs.engines.SGEComputationEngine import SGEComputationEngine
 from independent_jobs.jobs.DummyJob import DummyJob
 from independent_jobs.tools.FileSystem import FileSystem
 
-
 class DummyComputation(object):
     def __init__(self, engine):
         self.engine = engine
@@ -49,7 +49,7 @@ class DummyComputation(object):
         return agg
 
 class DummyJobTests(unittest.TestCase):
-    def engine_tester(self, engine, sleep_times):
+    def engine_helper(self, engine, sleep_times):
         dc = DummyComputation(engine)
         
         aggregators = []
@@ -74,6 +74,9 @@ class DummyJobTests(unittest.TestCase):
             self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
     def test_sge_engine(self):
+        if not FileSystem.cmd_exists("qsub"):
+            raise SkipTest
+
         home = expanduser("~")
         folder = os.sep.join([home, "unit_test_sge_dummy_result"])
         try:
@@ -84,7 +87,7 @@ class DummyJobTests(unittest.TestCase):
         engine = SGEComputationEngine(batch_parameters, check_interval=1)
         num_submissions = 3
         sleep_times = randint(0, 3, num_submissions)
-        self.engine_tester(engine, sleep_times)
+        self.engine_helper(engine, sleep_times)
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

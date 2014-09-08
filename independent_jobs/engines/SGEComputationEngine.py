@@ -34,7 +34,10 @@ from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterC
 
 class SGEComputationEngine(BatchClusterComputationEngine):
     def __init__(self, batch_parameters, check_interval=10):
-        BatchClusterComputationEngine.__init__(self, batch_parameters, check_interval)
+        BatchClusterComputationEngine.__init__(self,
+                                               batch_parameters=batch_parameters,
+                                               check_interval=check_interval,
+                                               submission_cmd="qsub")
 
     def create_batch_script(self, job_name, dispatcher_string):
         command = dispatcher_string

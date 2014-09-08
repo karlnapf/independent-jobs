@@ -44,7 +44,7 @@ class DummyComputation(object):
         return agg
 
 class DummyJobTests(unittest.TestCase):
-    def engine_tester(self, engine, sleep_times):
+    def engine_helper(self, engine, sleep_times):
         dc = DummyComputation(engine)
         
         aggregators = []
@@ -67,7 +67,7 @@ class DummyJobTests(unittest.TestCase):
     def test_serial_engine(self):
         num_submissions = 3
         sleep_times = randint(0, 3, num_submissions)
-        self.engine_tester(SerialComputationEngine(), sleep_times)
+        self.engine_helper(SerialComputationEngine(), sleep_times)
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

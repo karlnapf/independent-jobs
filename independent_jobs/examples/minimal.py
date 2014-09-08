@@ -45,45 +45,46 @@ from independent_jobs.tools.Log import Log
 # ScalarResultAggregator
 if __name__ == '__main__':
     Log.set_loglevel(logging.INFO)
-    logging.info("start")
+    logging.info("Start")
     # create an instance of the SGE engine, with certain parameters
     
     # create folder name string
     home = expanduser("~")
-    foldername = os.sep.join([home, "minimal_example_sge"])
-    logging.info("setting engine folder to %s" % foldername)
+    foldername = os.sep.join([home, "minimal_example"])
+    logging.info("Setting engine folder to %s" % foldername)
     
     # create parameter instance that is needed for any batch computation engine
-    logging.info("creating batch parameter instance")
+    logging.info("Creating batch parameter instance")
     batch_parameters = BatchClusterParameters(foldername=foldername)
     
-    # finally, create SGE engine instance, which can be used to submit jobs to
-    logging.info("creating SGE engine instance")
-    engine = SGEComputationEngine(batch_parameters, check_interval=1)
+    # possibly create SGE engine instance, which can be used to submit jobs to
+    # there are more engines available.
+#     logging.info("creating SGE engine instance")
+#     engine = SGEComputationEngine(batch_parameters, check_interval=1)
     
-#    # replace engine by serial engine (which is already implemented) to test things
-#    logging.info("Replacing engine with serial engine instance")
-#    engine = SerialComputationEngine()
+#    # create serial engine (which works locally)
+    logging.info("Creating serial engine instance")
+    engine = SerialComputationEngine()
     
     # we have to collect aggregators somehow
     aggregators = []
     
     # submit job three times
-    logging.info("starting loop over job submission")
+    logging.info("Starting loop over job submission")
     for i in range(3):
-        logging.info("submitting job %d" % i)
+        logging.info("Submitting job %d" % i)
         job = MyJob(ScalarResultAggregator())
         aggregators.append(engine.submit_job(job))
         
     # let the engine finish its business
-    logging.info("wait for all call in engine")
+    logging.info("Wait for all call in engine")
     engine.wait_for_all()
     
     # lets collect the results
     results = zeros(len(aggregators))
     logging.info("Collecting results")
     for i in range(len(aggregators)):
-        logging.info("collecting result %d" % i)
+        logging.info("Collecting result %d" % i)
         # let the aggregator finalize things, not really needed here but in general
         aggregators[i].finalize()
         
@@ -91,4 +92,4 @@ if __name__ == '__main__':
         # which we need to extract the number from
         results[i] = aggregators[i].get_final_result().result
     
-    print "results", results
+    print "Results", results

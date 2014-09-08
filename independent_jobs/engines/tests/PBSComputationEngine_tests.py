@@ -26,6 +26,7 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the author.
 """
+from nose import SkipTest
 from numpy.random import randint
 import os
 from os.path import expanduser
@@ -49,7 +50,7 @@ class DummyComputation(object):
         return agg
 
 class DummyJobTests(unittest.TestCase):
-    def engine_tester(self, engine, sleep_times):
+    def engine_helper(self, engine, sleep_times):
         dc = DummyComputation(engine)
         
         aggregators = []
@@ -74,6 +75,9 @@ class DummyJobTests(unittest.TestCase):
             self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
     def test_pbs_engine_max_waiting_time(self):
+        if not FileSystem.cmd_exists("qsub"):
+            raise SkipTest
+        
         home = expanduser("~")
         folder = os.sep.join([home, "unit_test_dummy_pbs_result_max_wait"])
         
@@ -84,9 +88,12 @@ class DummyJobTests(unittest.TestCase):
         batch_parameters = BatchClusterParameters(foldername=folder, max_walltime=8)
         engine = PBSComputationEngine(batch_parameters, check_interval=1)
         sleep_times = [2, -1]
-        self.engine_tester(engine, sleep_times)
+        self.engine_helper(engine, sleep_times)
         
     def test_pbs_engine(self):
+        if not FileSystem.cmd_exists("qsub"):
+            raise SkipTest
+        
         home = expanduser("~")
         folder = os.sep.join([home, "unit_test_pbs_dummy_result"])
         try:
@@ -97,7 +104,7 @@ class DummyJobTests(unittest.TestCase):
         engine = PBSComputationEngine(batch_parameters, check_interval=1)
         num_submissions = 3
         sleep_times = randint(0, 3, num_submissions)
-        self.engine_tester(engine, sleep_times)
+        self.engine_helper(engine, sleep_times)
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
