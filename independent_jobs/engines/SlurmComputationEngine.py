@@ -33,11 +33,13 @@ from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterC
 
 
 class SlurmComputationEngine(BatchClusterComputationEngine):
-    def __init__(self, batch_parameters, check_interval=10):
+    def __init__(self, batch_parameters, check_interval=10, do_cleanup=False):
         BatchClusterComputationEngine.__init__(self,
                                                batch_parameters=batch_parameters,
                                                check_interval=check_interval,
                                                submission_cmd="sbatch")
+                                               do_clean_up=do_cleanup)
+>>>>>>> some updates around cleaning up
 
     def create_batch_script(self, job_name, dispatcher_string):
         command = "nice -n 10 " + dispatcher_string
