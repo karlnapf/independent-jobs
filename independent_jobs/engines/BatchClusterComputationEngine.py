@@ -31,7 +31,6 @@ import logging
 from os import makedirs
 import os
 from popen2 import popen2
-import shutil
 import time
 
 from independent_jobs.aggregators.PBSResultAggregatorWrapper import PBSResultAggregatorWrapper
@@ -47,8 +46,8 @@ class Dispatcher(object):
         job.compute()
 
 class BatchClusterComputationEngine(IndependentComputationEngine):
-    def __init__(self, batch_parameters, submission_cmd="qsub", 
-                 check_interval=10, do_clean_up = False):
+    def __init__(self, batch_parameters, submission_cmd,
+                 check_interval=10, do_clean_up=False):
         IndependentComputationEngine.__init__(self)
         
         self.batch_parameters = batch_parameters
