@@ -74,7 +74,7 @@ class DummyJobTests(unittest.TestCase):
             for i in range(num_submissions):
                 self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
-    def test_sge_engine(self):
+    def test_sge_engine_clean_up(self):
         if not FileSystem.cmd_exists("qsub"):
             raise SkipTest
 
@@ -85,7 +85,25 @@ class DummyJobTests(unittest.TestCase):
         except OSError:
             pass
         batch_parameters = BatchClusterParameters(foldername=folder)
-        engine = SGEComputationEngine(batch_parameters, check_interval=1)
+        engine = SGEComputationEngine(batch_parameters, check_interval=1,
+                                      do_clean_up=True)
+        num_submissions = 3
+        sleep_times = randint(0, 3, num_submissions)
+        self.engine_helper(engine, sleep_times)
+
+    def test_sge_engine_no_clean_up(self):
+        if not FileSystem.cmd_exists("qsub"):
+            raise SkipTest
+
+        home = expanduser("~")
+        folder = os.sep.join([home, "unit_test_sge_dummy_result"])
+        try:
+            shutil.rmtree(folder)
+        except OSError:
+            pass
+        batch_parameters = BatchClusterParameters(foldername=folder)
+        engine = SGEComputationEngine(batch_parameters, check_interval=1,
+                                      do_clean_up=False)
         num_submissions = 3
         sleep_times = randint(0, 3, num_submissions)
         self.engine_helper(engine, sleep_times)

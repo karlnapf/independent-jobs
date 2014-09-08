@@ -91,7 +91,7 @@ class DummyJobTests(unittest.TestCase):
         sleep_times = [2, -1]
         self.engine_helper(engine, sleep_times)
         
-    def test_slurm_engine(self):
+    def test_slurm_engine_clean_up(self):
         if not FileSystem.cmd_exists("srun"):
             raise SkipTest
         
@@ -102,7 +102,25 @@ class DummyJobTests(unittest.TestCase):
         except OSError:
             pass
         batch_parameters = BatchClusterParameters(foldername=folder)
-        engine = SlurmComputationEngine(batch_parameters, check_interval=1)
+        engine = SlurmComputationEngine(batch_parameters, check_interval=1,
+                                        do_clean_up=True)
+        num_submissions = 3
+        sleep_times = randint(0, 3, num_submissions)
+        self.engine_helper(engine, sleep_times)
+
+    def test_slurm_engine_no_clean_up(self):
+        if not FileSystem.cmd_exists("srun"):
+            raise SkipTest
+        
+        home = expanduser("~")
+        folder = os.sep.join([home, "unit_test_slurm_dummy_result"])
+        try:
+            shutil.rmtree(folder)
+        except OSError:
+            pass
+        batch_parameters = BatchClusterParameters(foldername=folder)
+        engine = SlurmComputationEngine(batch_parameters, check_interval=1,
+                                        do_clean_up=False)
         num_submissions = 3
         sleep_times = randint(0, 3, num_submissions)
         self.engine_helper(engine, sleep_times)
