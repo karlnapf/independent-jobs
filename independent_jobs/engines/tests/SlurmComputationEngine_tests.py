@@ -70,9 +70,10 @@ class DummyJobTests(unittest.TestCase):
             
         for i in range(num_submissions):
             self.assertEqual(results[i], sleep_times[i])
-            
-        for i in range(num_submissions):
-            self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
+        
+        if engine.do_cleanup:
+            for i in range(num_submissions):
+                self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
     def test_slurm_engine_max_waiting_time(self):
         if not FileSystem.cmd_exists("srun"):
