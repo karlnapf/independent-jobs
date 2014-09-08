@@ -101,8 +101,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
             time.sleep(1)
         
         lines = []
-        lines.append("from engines.BatchClusterComputationEngine import Dispatcher")
-        lines.append("from tools.Log import Log")
+        lines.append("from independent_jobs.engines.BatchClusterComputationEngine import Dispatcher")
+        lines.append("from independent_jobs.tools.Log import Log")
         lines.append("Log.set_loglevel(%d)" % self.batch_parameters.loglevel)
         lines.append("filename=\"%s\"" % job_filename)
         lines.append("Dispatcher.dispatch(filename)")
@@ -121,7 +121,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         f.close()
         
         # send job_string to qsub
-        outpipe, inpipe = popen2('qsub')
+        outpipe, inpipe = popen2(self.submission_cmd)
         inpipe.write(job_string + os.linesep)
         inpipe.close()
         

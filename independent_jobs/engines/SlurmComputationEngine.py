@@ -37,7 +37,7 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         BatchClusterComputationEngine.__init__(self,
                                                batch_parameters=batch_parameters,
                                                check_interval=check_interval,
-                                               submission_cmd="srun")
+                                               submission_cmd="sbatch")
 
     def create_batch_script(self, job_name, dispatcher_string):
         command = "nice -n 10 " + dispatcher_string
@@ -52,8 +52,7 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         output = workdir + os.sep + "output.txt"
         error = workdir + os.sep + "error.txt"
         
-        job_string = """
-#PBS -S /bin/bash
+        job_string = """#!/bin/bash
 #SBATCH -J %s
 #SBATCH --time=%s
 #SBATCH -n %s
