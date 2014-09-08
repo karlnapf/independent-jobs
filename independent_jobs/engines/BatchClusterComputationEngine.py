@@ -55,7 +55,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         self.do_clean_up = do_clean_up
         self.submission_cmd = submission_cmd
         # make sure submission command executable is in path
-        if not FileSystem.cmd_exists("qsub"):
+        if not FileSystem.cmd_exists(submission_cmd):
             raise ValueError("Submission command executable \"%s\" not found" % submission_cmd)
         
         self.submitted_job_map = {}
