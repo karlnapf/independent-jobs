@@ -99,7 +99,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         # wait until FS says that the file exists
         while not FileSystem.file_exists_new_shell(job_filename):
-            time.sleep(self.submission_delay)
+            time.sleep(1)
         
         lines = []
         lines.append("from independent_jobs.engines.BatchClusterComputationEngine import Dispatcher")
