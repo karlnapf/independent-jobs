@@ -47,13 +47,14 @@ class Dispatcher(object):
 
 class BatchClusterComputationEngine(IndependentComputationEngine):
     def __init__(self, batch_parameters, submission_cmd,
-                 check_interval=10, do_clean_up=False):
+                 check_interval=10, do_clean_up=False, submission_delay=0.5):
         IndependentComputationEngine.__init__(self)
         
         self.batch_parameters = batch_parameters
         self.check_interval = check_interval
         self.do_clean_up = do_clean_up
         self.submission_cmd = submission_cmd
+        self.submission_delay = submission_delay
         # make sure submission command executable is in path
         if not FileSystem.cmd_exists(submission_cmd):
             raise ValueError("Submission command executable \"%s\" not found" % submission_cmd)
@@ -94,11 +95,11 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         Serialization.serialize_object(wrapped_job, job_filename)
         
         # allow the FS and queue to process things        
-        time.sleep(.5)
+        time.sleep(self.submission_delay)
         
         # wait until FS says that the file exists
         while not FileSystem.file_exists_new_shell(job_filename):
-            time.sleep(1)
+            time.sleep(self.submission_delay)
         
         lines = []
         lines.append("from independent_jobs.engines.BatchClusterComputationEngine import Dispatcher")
