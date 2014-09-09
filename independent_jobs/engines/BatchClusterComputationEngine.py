@@ -121,7 +121,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         f.write(job_string)
         f.close()
         
-        # send job_string to qsub
+        # send job_string to batch command
         outpipe, inpipe = popen2(self.submission_cmd)
         inpipe.write(job_string + os.linesep)
         inpipe.close()
