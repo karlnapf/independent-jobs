@@ -117,7 +117,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
             job_string = os.linesep.join([self.batch_parameters.parameter_prefix,
                                          job_string])
         
-        f = open(job_folder + os.sep + "pbs_script", "w")
+        f = open(job_folder + os.sep + "batch_script", "w")
         f.write(job_string)
         f.close()
         
