@@ -76,7 +76,7 @@ class DummyJobTests(unittest.TestCase):
                 self.assertFalse(FileSystem.file_exists_new_shell(aggregators[i].filename))
 
     def test_slurm_engine_max_waiting_time(self):
-        if not FileSystem.cmd_exists("srun"):
+        if not FileSystem.cmd_exists("sbatch"):
             raise SkipTest
         
         home = expanduser("~")
@@ -92,7 +92,7 @@ class DummyJobTests(unittest.TestCase):
         self.engine_helper(engine, sleep_times)
         
     def test_slurm_engine_clean_up(self):
-        if not FileSystem.cmd_exists("srun"):
+        if not FileSystem.cmd_exists("sbatch"):
             raise SkipTest
         
         home = expanduser("~")
@@ -109,7 +109,7 @@ class DummyJobTests(unittest.TestCase):
         self.engine_helper(engine, sleep_times)
 
     def test_slurm_engine_no_clean_up(self):
-        if not FileSystem.cmd_exists("srun"):
+        if not FileSystem.cmd_exists("sbatch"):
             raise SkipTest
         
         home = expanduser("~")
