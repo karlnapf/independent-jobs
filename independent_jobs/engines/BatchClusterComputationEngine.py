@@ -71,7 +71,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         Serialization.serialize_object(wrapped_job, job_filename)
         
-        # allow the FS and queue to process things        
+        # allow the queue to process things        
         time.sleep(self.submission_delay)
         
         lines = []
