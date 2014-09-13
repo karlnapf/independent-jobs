@@ -15,6 +15,10 @@ from independent_jobs.tools.Serialization import Serialization
 class Dispatcher(object):
     @staticmethod
     def dispatch(filename):
+        # wait until FS says that the file exists
+        while not FileSystem.file_exists_new_shell(filename):
+            time.sleep(1)
+        
         job = Serialization.deserialize_object(filename)
         job.compute()
 
@@ -69,10 +73,6 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         # allow the FS and queue to process things        
         time.sleep(self.submission_delay)
-        
-        # wait until FS says that the file exists
-        while not FileSystem.file_exists_new_shell(job_filename):
-            time.sleep(1)
         
         lines = []
         lines.append("from independent_jobs.engines.BatchClusterComputationEngine import Dispatcher")
