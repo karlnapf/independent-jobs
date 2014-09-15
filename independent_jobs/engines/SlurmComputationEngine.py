@@ -23,16 +23,16 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
             qos = self.batch_parameters.qos
         except AttributeError:
             if self.batch_parameters.max_walltime <= 60 * 60 and \
-               self.batch_parameters.num_nodes <= 90:
+               self.batch_parameters.nodes <= 90:
                 qos = "short"
             elif self.batch_parameters.max_walltime <= 60 * 60 * 24 and \
-                 self.batch_parameters.num_nodes <= 70:
+                 self.batch_parameters.nodes <= 70:
                 qos = "normal"
             elif self.batch_parameters.max_walltime <= 60 * 60 * 72 and \
-                 self.batch_parameters.num_nodes <= 20:
+                 self.batch_parameters.nodes <= 20:
                 qos = "medium"
             elif self.batch_parameters.max_walltime <= 60 * 60 * 24 and \
-                 self.batch_parameters.num_nodes <= 10:
+                 self.batch_parameters.nodes <= 10:
                 qos = "long"
             else:
                 logger.info("Unable to infer slurm qos. Setting to normal")
