@@ -38,7 +38,7 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
                 logger.info("Unable to infer slurm qos. Setting to normal")
                 qos = "normal"
             
-            logger.info("Infered slurm qos: %d", qos)
+            logger.info("Infered slurm qos: %s", qos)
         
         num_nodes = str(self.batch_parameters.nodes)
         # note memory is in megabyes
