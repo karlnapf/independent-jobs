@@ -1,9 +1,8 @@
-
 import os
 import time
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
-
+from independent_jobs.tools.Log import logger
 
 class SlurmComputationEngine(BatchClusterComputationEngine):
     def __init__(self, batch_parameters, check_interval=10, do_clean_up=False):
@@ -19,6 +18,28 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         
         walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
         
+        # automatically set queue if not specified by user
+        try:
+            qos = self.batch_parameters.qos
+        except AttributeError:
+            if self.batch_parameters.max_walltime <= 60 * 60 and \
+               self.batch_parameters.num_nodes <= 90:
+                qos = "short"
+            elif self.batch_parameters.max_walltime <= 60 * 60 * 24 and \
+                 self.batch_parameters.num_nodes <= 70:
+                qos = "normal"
+            elif self.batch_parameters.max_walltime <= 60 * 60 * 72 and \
+                 self.batch_parameters.num_nodes <= 20:
+                qos = "medium"
+            elif self.batch_parameters.max_walltime <= 60 * 60 * 24 and \
+                 self.batch_parameters.num_nodes <= 10:
+                qos = "long"
+            else:
+                logger.info("Unable to infer slurm qos. Setting to normal")
+                qos = "normal"
+            
+            logger.info("Infered slurm qos: %d", qos)
+        
         num_nodes = str(self.batch_parameters.nodes)
         # note memory is in megabyes
         memory = str(self.batch_parameters.memory)
@@ -30,12 +51,13 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         job_string = """#!/bin/bash
 #SBATCH -J %s
 #SBATCH --time=%s
+#SBATCH --qos=%s
 #SBATCH -n %s
 #SBATCH --mem=%s
 #SBATCH --output=%s
 #SBATCH --error=%s
 cd %s
-%s""" % (job_name, walltime, num_nodes, memory, output, error, workdir,
+%s""" % (job_name, walltime, qos, num_nodes, memory, output, error, workdir,
          command)
         
         return job_string
