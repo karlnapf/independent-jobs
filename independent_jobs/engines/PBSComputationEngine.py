@@ -1,8 +1,7 @@
-
 import os
-import time
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
+from independent_jobs.tools.Time import Time
 
 
 class PBSComputationEngine(BatchClusterComputationEngine):
@@ -16,8 +15,8 @@ class PBSComputationEngine(BatchClusterComputationEngine):
     def create_batch_script(self, job_name, dispatcher_string):
         command = "nice -n 10 " + dispatcher_string
         
-        walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
-        walltime = "walltime=" + walltime
+        days, hours, minutes, seconds = Time.sec_to_all(self.batch_parameters.max_walltime)
+        walltime = '%d:%d:%d' % (days*24, hours, minutes, seconds)
         
         num_nodes = "nodes=1:ppn=" + str(self.batch_parameters.nodes)
         memory = "pmem=" + str(self.batch_parameters.memory) + "gb"

@@ -1,8 +1,7 @@
-
 import os
-import time
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
+from independent_jobs.tools.Time import Time
 
 
 class SGEComputationEngine(BatchClusterComputationEngine):
@@ -16,7 +15,8 @@ class SGEComputationEngine(BatchClusterComputationEngine):
     def create_batch_script(self, job_name, dispatcher_string):
         command = dispatcher_string
         
-        walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
+        days, hours, minutes, seconds = Time.sec_to_all(self.batch_parameters.max_walltime)
+        walltime = '%d:%d:%d' % (days*24, hours, minutes, seconds)
         
         memory = str(self.batch_parameters.memory) + "G"
         workdir = self.get_job_foldername(job_name)

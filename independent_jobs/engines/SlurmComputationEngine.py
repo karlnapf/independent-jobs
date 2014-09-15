@@ -1,8 +1,9 @@
 import os
-import time
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
 from independent_jobs.tools.Log import logger
+from independent_jobs.tools.Time import Time
+
 
 class SlurmComputationEngine(BatchClusterComputationEngine):
     def __init__(self, batch_parameters, check_interval=10, do_clean_up=False):
@@ -16,7 +17,8 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
     def create_batch_script(self, job_name, dispatcher_string):
         command = "nice -n 10 " + dispatcher_string
         
-        walltime = time.strftime('%H:%M:%S', time.gmtime(self.batch_parameters.max_walltime))
+        days, hours, minutes, seconds = Time.sec_to_all(self.batch_parameters.max_walltime)
+        walltime = '%d-%d:%d:%d' % (days, hours, minutes, seconds)
         
         # automatically set queue if not specified by user
         try:
@@ -61,3 +63,4 @@ cd %s
          command)
         
         return job_string
+
