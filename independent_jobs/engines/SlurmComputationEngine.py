@@ -24,7 +24,7 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         try:
             qos = self.batch_parameters.qos
         except AttributeError:
-            if self.batch_parameters.max_walltime <= 60 and \
+            if self.batch_parameters.max_walltime <= 60 * 60 and \
                self.batch_parameters.nodes <= 90:
                 qos = "short"
             elif self.batch_parameters.max_walltime <= 60 * 60 * 24 and \
