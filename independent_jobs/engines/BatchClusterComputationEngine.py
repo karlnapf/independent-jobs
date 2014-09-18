@@ -161,7 +161,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                         
                         # check whether maximum waiting time is over and re-submit if is
                         waited_for = time.time() - waiting_start
-                        if waited_for > self.batch_parameters.max_walltime:
+                        if self.batch_parameters.resubmit_on_timeout and \
+                           waited_for > self.batch_parameters.max_walltime:
                             new_job_name = self.create_job_name()
                             logger.info("%s exceeded maximum waiting time of %d" % (job_name, self.batch_parameters.max_walltime))
                             logger.info("Re-submitting under name %s" % new_job_name)
