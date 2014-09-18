@@ -1,6 +1,7 @@
 import os
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
+from independent_jobs.tools.FileSystem import FileSystem
 from independent_jobs.tools.Time import Time
 
 
@@ -36,3 +37,6 @@ source ~/.bash_profile
 %s""" % (job_name, walltime, memory, memory, output, error, workdir, command)
         
         return job_string
+
+    def is_available(self):
+        return FileSystem.cmd_exists(self.submission_cmd)

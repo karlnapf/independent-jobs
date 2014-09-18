@@ -51,7 +51,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     @abstractmethod
     def create_batch_script(self, job_name, dispatcher_string):
         raise NotImplementedError()
-        
+    
     def submit_wrapped_pbs_job(self, wrapped_job, job_name):
         job_folder = self.get_job_foldername(job_name)
         

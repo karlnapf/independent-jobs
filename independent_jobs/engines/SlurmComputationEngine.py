@@ -1,6 +1,7 @@
 import os
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
+from independent_jobs.tools.FileSystem import FileSystem
 from independent_jobs.tools.Log import logger
 from independent_jobs.tools.Time import Time
 
@@ -63,4 +64,3 @@ cd %s
          command)
         
         return job_string
-
