@@ -21,11 +21,12 @@ class FileSystem(object):
             folder = os.sep.join(splitted[:-1]) + os.sep
             fname = splitted[-1]
         else:
-            folder = "./"
+            folder = "." + os.sep
             fname = filename
         
         pipeoutput = subprocess.Popen("ls " + folder, shell=True, stdout=subprocess.PIPE)
         pipelines = pipeoutput.stdout.readlines()
+        
         files = "".join(pipelines).split(os.linesep)
         return fname in files
 
@@ -34,7 +35,7 @@ class FileSystem(object):
         while True:
             fn = filename_base + unicode(uuid.uuid4())
             try:
-                open(fn, "r")
+                open(fn, "r").close()
             except IOError:
                 # file did not exist, use that filename
                 break
