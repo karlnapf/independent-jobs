@@ -23,7 +23,8 @@ class Dispatcher(object):
 
 class BatchClusterComputationEngine(IndependentComputationEngine):
     def __init__(self, batch_parameters, submission_cmd,
-                 check_interval=10, do_clean_up=False, submission_delay=0.5):
+                 check_interval=10, do_clean_up=False, submission_delay=0.5,
+                 max_jobs_in_queue=0):
         IndependentComputationEngine.__init__(self)
         
         self.batch_parameters = batch_parameters
@@ -31,6 +32,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         self.do_clean_up = do_clean_up
         self.submission_cmd = submission_cmd
         self.submission_delay = submission_delay
+        self.max_jobs_in_queue = max_jobs_in_queue
         # make sure submission command executable is in path
         if not FileSystem.cmd_exists(submission_cmd):
             raise ValueError("Submission command executable \"%s\" not found" % submission_cmd)
@@ -112,6 +114,15 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         return FileSystem.get_unique_filename(self.batch_parameters.job_name_base)
     
     def submit_job(self, job):
+        # first step: check how many jobs are there in the queue, and if we
+        # should wait for submission until this has dropped under a certain value
+        if self.max_jobs_in_queue > 0 and \
+           len(self.submitted_job_map) > self.max_jobs_in_queue:
+            logger.info("Reached maximum number of jobs (%d) in queue, waiting." %
+                        self.max_jobs_in_queue)
+            self.wait_for_all()
+        
+        
         # replace job's wrapped_aggregator by PBS wrapped_aggregator to allow
         # FS based communication
         
@@ -184,5 +195,5 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         logger.info("All jobs finished.")
 
         # reset internal list for new submission round
-        self.submitted_aggregator_filenames = []
-        
+        self.submitted_job_map = {}
+        self.submitted_job_counter = 0
