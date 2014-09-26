@@ -54,6 +54,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     def create_batch_script(self, job_name, dispatcher_string):
         raise NotImplementedError()
     
+    def get_num_unfinished_jobs(self):
+        return sum([v==False for v in self.submitted_job_map.values()])
+    
     def submit_wrapped_pbs_job(self, wrapped_job, job_name):
         job_folder = self.get_job_foldername(job_name)
         
@@ -117,10 +120,10 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         # first step: check how many jobs are there in the queue, and if we
         # should wait for submission until this has dropped under a certain value
         if self.max_jobs_in_queue > 0 and \
-           len(self.submitted_job_map) > self.max_jobs_in_queue:
-            logger.info("Reached maximum number of jobs (%d) in queue, waiting." %
+           self.get_num_unfinished_jobs() > self.max_jobs_in_queue:
+            logger.info("Reached maximum number of unfinished jobs (%d) in queue, waiting." %
                         self.max_jobs_in_queue)
-            self.wait_for_all()
+            self.wait_for_all(self.max_jobs_in_queue)
         
         
         # replace job's wrapped_aggregator by PBS wrapped_aggregator to allow
@@ -139,17 +142,17 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         return job.aggregator
     
-    def wait_for_all(self):
+    def wait_for_all(self, desired_num_unfinished_jobs=0):
         """
-        Waits for all jobs to be completed, which means that until all
-        result files of all submitted jobs exist. Afterwards, the job list is
-        emptied for another trial.
+        Waits for the number of unfinished jobs reach a given value (usually 0),
+        which means that until all result files of all submitted jobs exist.
+        Afterwards, the job list is emptied for another trial.
         """
         # check whether there are unfinished jobs
         waiting_start = time.time()
         
-        # loop while there are unfinished jobs
-        while False in self.submitted_job_map.viewvalues():
+        # loop while there too many unfinished jobs
+        while self.get_num_unfinished_jobs() > desired_num_unfinished_jobs:
             
             # iterate over all jobs in list and check whether they are done yet
             for job_name, job_finished in self.submitted_job_map.iteritems():
@@ -175,7 +178,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                         if self.batch_parameters.resubmit_on_timeout and \
                            waited_for > self.batch_parameters.max_walltime:
                             new_job_name = self.create_job_name()
-                            logger.info("%s exceeded maximum waiting time of %d" % (job_name, self.batch_parameters.max_walltime))
+                            logger.info("%s exceeded maximum waiting time of %d" 
+                                        % (job_name, self.batch_parameters.max_walltime))
                             logger.info("Re-submitting under name %s" % new_job_name)
 
                             # remove from submitted list to not wait anymore and
@@ -191,9 +195,10 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                             # submitted job map has changed, break inner
                             # infinite loop and start again
                             break
-            
-        logger.info("All jobs finished.")
-
-        # reset internal list for new submission round
-        self.submitted_job_map = {}
-        self.submitted_job_counter = 0
+        
+        if self.get_num_unfinished_jobs() == 0:
+            logger.info("All jobs finished.")
+    
+            # reset internal list for new submission round
+            self.submitted_job_map = {}
+            self.submitted_job_counter = 0
