@@ -163,12 +163,15 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                 
                     # wait until file exists (dangerous, so have a maximum waiting time
                     # after which old job is discarded and replacement is submitted)
-                    while True:
-                        # race condition is fine here, but use a new python shell
-                        # due to NFS cache problems otherwise
-                        if FileSystem.file_exists_new_shell(filename):
-                            self.submitted_job_map[job_name] = True
-                            break
+                    while self.submitted_job_map[job_name]:
+                        # loop over all submitted jobs to update the list of 
+                        # unfinished jobs, in this loop however, we use only
+                        # the current job_name
+                        for job_name in self.submitted_job_map.keys():
+                            # race condition is fine here, but use a new python shell
+                            # due to NFS cache problems otherwise
+                            if FileSystem.file_exists_new_shell(filename):
+                                self.submitted_job_map[job_name] = True
                         
                         time.sleep(self.check_interval)
                         
