@@ -98,6 +98,16 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         f.write(job_string)
         f.close()
         
+        job_id = self.submit_to_batch_system(job_string)
+        
+        if job_id == "":
+            raise RuntimeError("Could not parse job_id. Something went wrong with the job submission")
+        
+        f = open(job_folder + os.sep + "job_id", 'w')
+        f.write(job_id + os.linesep)
+        f.close()
+    
+    def submit_to_batch_system(self, job_string):
         # send job_string to batch command
         outpipe, inpipe = popen2(self.submission_cmd)
         inpipe.write(job_string + os.linesep)
@@ -106,12 +116,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         job_id = outpipe.read().strip()
         outpipe.close()
         
-        if job_id == "":
-            raise RuntimeError("Could not parse job_id. Something went wrong with the job submission")
-        
-        f = open(job_folder + os.sep + "job_id", 'w')
-        f.write(job_id + os.linesep)
-        f.close()
+        return job_id
     
     def create_job_name(self):
         return FileSystem.get_unique_filename(self.batch_parameters.job_name_base)
