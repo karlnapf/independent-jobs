@@ -163,7 +163,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                 
                     # wait until file exists (dangerous, so have a maximum waiting time
                     # after which old job is discarded and replacement is submitted)
-                    while self.submitted_job_map[job_name]:
+                    while self.submitted_job_map[job_name] == False:
                         # loop over all submitted jobs to update the list of 
                         # unfinished jobs, in this loop however, we use only
                         # the current job_name
