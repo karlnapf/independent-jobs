@@ -21,4 +21,3 @@ class BatchClusterParameters(object):
         self.loglevel = loglevel
         self.parameter_prefix = parameter_prefix
         self.resubmit_on_timeout = resubmit_on_timeout
-        

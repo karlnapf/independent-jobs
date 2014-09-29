@@ -12,7 +12,8 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
                                                check_interval=check_interval,
                                                submission_cmd="sbatch",
                                                do_clean_up=do_clean_up,
-                                               submission_delay=0.01)
+                                               submission_delay=0.01,
+                                               max_jobs_in_queue=5000)
 
     def create_batch_script(self, job_name, dispatcher_string):
         command = "nice -n 10 " + dispatcher_string
