@@ -161,7 +161,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         filename = self.get_aggregator_filename(job_name)
         return FileSystem.file_exists_new_shell(filename)
     
-    def _get_max_wait_time_exceed_jobs(self, job_name):
+    def _get_max_wait_time_exceed_jobs(self):
         names = []
         current_time = time.time()
         for job_name, job_time in self.submitted_jobs:
