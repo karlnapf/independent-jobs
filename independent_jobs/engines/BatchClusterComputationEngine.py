@@ -161,6 +161,27 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         filename = self.get_aggregator_filename(job_name)
         return FileSystem.file_exists_new_shell(filename)
     
+    def _get_max_wait_time_exceed_jobs(self, job_name):
+        names = []
+        current_time = time.time()
+        for job_name, job_time in self.submitted_jobs:
+            if abs(current_time - job_time) > self.batch_parameters.max_walltime:
+                names += [job_name]
+        return names
+    
+    def _rebsubmit(self, job_name):
+        new_job_name = self.create_job_name()
+        logger.info("Re-submitting under name %s" % new_job_name)
+        
+        # remove from submitted list
+        self.submitted_jobs.remove(job_name)
+        
+        # load job from disc and re-submit under new name
+        job_filename = self.get_job_filename(job_name)
+        wrapped_job = Serialization.deserialize_object(job_filename)
+        self.submit_wrapped_pbs_job(wrapped_job, new_job_name)
+        self._insert_job_time_sorted(new_job_name)
+    
     def _wait_until_n_unfinished(self, desired_num_unfinished):
         """
         Iteratively checks all non-finished jobs and updates whether they are
@@ -188,6 +209,14 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                     # dont change i as it is now the index of the next element
                 else:
                     i += 1
+                        
+            # check for re-submissions
+            if self.batch_parameters.resubmit_on_timeout:
+                for job_name in self._get_max_wait_time_exceed_jobs():
+                    logger.info("%s exceeded maximum waiting time of %d" 
+                                % (job_name, self.batch_parameters.max_walltime))
+                    self._resubmit(job_name)
+                    
             time.sleep(self.check_interval)
 
     def wait_for_all(self):
