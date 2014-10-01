@@ -170,7 +170,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         """
         
         last_printed = self._get_oldest_job_in_queue()
-        while self.get_num_unfinished_jobs() > desired_num_unfinished:
+        while self._get_num_unfinished_jobs() > desired_num_unfinished:
             oldest = self._get_oldest_job_in_queue()
             if oldest != last_printed:
                 last_printed = oldest
