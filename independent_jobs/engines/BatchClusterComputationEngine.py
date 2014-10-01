@@ -171,13 +171,13 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         last_printed = self._get_oldest_job_in_queue()
         logger.info("Waiting for %s and %d other jobs" % (last_printed,
-                                                          self._get_num_unfinished_jobs()))
+                                                          self._get_num_unfinished_jobs() - 1))
         while self._get_num_unfinished_jobs() > desired_num_unfinished:
             oldest = self._get_oldest_job_in_queue()
             if oldest != last_printed:
                 last_printed = oldest
                 logger.info("Waiting for %s and %d other jobs" % (last_printed,
-                                                                  self._get_num_unfinished_jobs()))
+                                                                  self._get_num_unfinished_jobs() - 1))
             
             # delete all finished jobs from internal list
             i = 0
