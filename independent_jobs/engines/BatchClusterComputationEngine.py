@@ -169,7 +169,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                 names += [job_name]
         return names
     
-    def _rebsubmit(self, job_name):
+    def _resubmit(self, job_name):
         new_job_name = self.create_job_name()
         logger.info("Re-submitting under name %s" % new_job_name)
         
