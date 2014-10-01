@@ -133,7 +133,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         # first step: check how many jobs are there in the queue, and if we
         # should wait for submission until this has dropped under a certain value
         if self.max_jobs_in_queue > 0 and \
-           self.get_num_unfinished_jobs() > self.max_jobs_in_queue:
+           self._get_num_unfinished_jobs() > self.max_jobs_in_queue:
             logger.info("Reached maximum number of %d unfinished jobs in queue." % 
                         self.max_jobs_in_queue)
             self._wait_until_n_unfinished(self.max_jobs_in_queue)
