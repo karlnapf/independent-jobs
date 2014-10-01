@@ -37,8 +37,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         if not FileSystem.cmd_exists(submission_cmd):
             raise ValueError("Submission command executable \"%s\" not found" % submission_cmd)
         
-        self.submitted_job_map = {}
-        self.submitted_job_counter = 0
+        # list of tuples of (job_name, submission_time), which is kept in sorted
+        # order by the time
+        self.submitted_jobs = []
     
     def get_aggregator_filename(self, job_name):
         job_folder = self.get_job_foldername(job_name)
@@ -54,16 +55,23 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     def create_batch_script(self, job_name, dispatcher_string):
         raise NotImplementedError()
     
-    def get_num_unfinished_jobs(self):
-        return sum([v==False for v in self.submitted_job_map.values()])
+    def _get_num_unfinished_jobs(self):
+        return len(self.submitted_jobs)
+    
+    def _insert_job_time_sorted(self, job_name):
+        self.submitted_jobs.append((job_name, time.time()))
+        
+        # sort list by second element (in place)
+        self.submitted_jobs.sort(key=lambda tup: tup[1])
+    
+    def _get_oldest_job_in_queue(self):
+        return self.submitted_jobs[0][0] if len(self.submitted_jobs) > 0 else None
     
     def submit_wrapped_pbs_job(self, wrapped_job, job_name):
         job_folder = self.get_job_foldername(job_name)
         
-        # track submitted jobs/aggregators for retrieving results from FS later
-        # dont do this in memory as it might blow up things
-        self.submitted_job_map[job_name] = False
-        self.submitted_job_counter += 1
+        # track submitted (and unfinished) jobs and their start time
+        self._insert_job_time_sorted(job_name)
         
         # try to create folder if not yet exists
         job_filename = self.get_job_filename(job_name)
@@ -126,9 +134,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         # should wait for submission until this has dropped under a certain value
         if self.max_jobs_in_queue > 0 and \
            self.get_num_unfinished_jobs() > self.max_jobs_in_queue:
-            logger.info("Reached maximum number of unfinished jobs (%d) in queue, waiting." %
+            logger.info("Reached maximum number of %d unfinished jobs in queue." % 
                         self.max_jobs_in_queue)
-            self.wait_for_all(self.max_jobs_in_queue)
+            self._wait_until_n_unfinished(self.max_jobs_in_queue)
         
         
         # replace job's wrapped_aggregator by PBS wrapped_aggregator to allow
@@ -147,72 +155,39 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         return job.aggregator
     
-    def wait_for_all(self, desired_num_unfinished_jobs=0):
-        """
-        Waits for the number of unfinished jobs reach a given value (usually 0),
-        which means that until all result files of all submitted jobs exist.
-        Afterwards, the job list is emptied for another trial.
-        """
-        # check whether there are unfinished jobs
-        waiting_start = time.time()
-        
-        # outer loop is to handle re-submitted jobs
-        while self.get_num_unfinished_jobs() > desired_num_unfinished_jobs:
-            # iterate over all jobs in list and check whether they are done yet
-            for job_name, job_finished in self.submitted_job_map.iteritems():
-                filename = self.get_aggregator_filename(job_name)
-                
-                # do not wait again for finished jobs
-                if not job_finished:
-                    logger.info("waiting for %s" % job_name)
-                
-                    # wait until file exists (dangerous, so have a maximum waiting time
-                    # after which old job is discarded and replacement is submitted)
-                    while self.submitted_job_map[job_name] == False:
-                        # loop over all submitted jobs to update the list of 
-                        # unfinished jobs, in this loop however, we use only
-                        # the current job_name
-                        for job_name in self.submitted_job_map.keys():
-                            # race condition is fine here, but use a new python shell
-                            # due to NFS cache problems otherwise
-                            if FileSystem.file_exists_new_shell(filename):
-                                self.submitted_job_map[job_name] = True
-                        
-                        time.sleep(self.check_interval)
-                        
-                        # check whether maximum waiting time is over and re-submit if is
-                        waited_for = time.time() - waiting_start
-                        if self.batch_parameters.resubmit_on_timeout and \
-                           waited_for > self.batch_parameters.max_walltime:
-                            new_job_name = self.create_job_name()
-                            logger.info("%s exceeded maximum waiting time of %d" 
-                                        % (job_name, self.batch_parameters.max_walltime))
-                            logger.info("Re-submitting under name %s" % new_job_name)
+    def _check_job_done(self, job_name):
+        # race condition is fine here, but use a new python shell
+        # due to NFS cache problems otherwise
+        filename = self.get_aggregator_filename(job_name)
+        return FileSystem.file_exists_new_shell(filename)
     
-                            # remove from submitted list to not wait anymore and
-                            # change job name
-                            del self.submitted_job_map[job_name]
-                            job_filename = self.get_job_filename(job_name)
-                            
-                            # load job from disc and re-submit
-                            wrapped_job = Serialization.deserialize_object(job_filename)
-                            self.submit_wrapped_pbs_job(wrapped_job, new_job_name)
-                            waiting_start = time.time()
-                            
-                            # submitted job map has changed, break inner
-                            # infinite loop and start again
-                            break
-                
-                # break waiting early if desired number of unfinished jobs reached
-                if self.get_num_unfinished_jobs() <= desired_num_unfinished_jobs:
-                    break
+    def _wait_until_n_unfinished(self, desired_num_unfinished):
+        """
+        Iteratively checks all non-finished jobs and updates whether they are
+        finished. Blocks until there are less or exactly desired_num_unfinished
+        unfinished jobs in the queue. Messages a "waiting for" info message
+        for the oldest job in the queue.
+        """
         
-        if self.get_num_unfinished_jobs() == 0:
-            logger.info("All jobs finished.")
-    
-            # reset internal list for new submission round
-            self.submitted_job_map = {}
-            self.submitted_job_counter = 0
-        else:
-            logger.info("Waiting done, %d unfinished jobs in queue." % 
-                        self.get_num_unfinished_jobs())
+        last_printed = self._get_oldest_job_in_queue()
+        while self.get_num_unfinished_jobs() > desired_num_unfinished:
+            oldest = self._get_oldest_job_in_queue()
+            if oldest != last_printed:
+                last_printed = oldest
+                logger.info("Waiting for %s and %d other jobs" % (last_printed,
+                                                                  self.get_num_unfinished_jobs()))
+            
+            # delete all finished jobs from internal list
+            i = 0
+            while i < len(self.submitted_jobs):
+                job_name = self.submitted_jobs[i][0]
+                if self._check_job_done(job_name):
+                    del self.submitted_jobs[i]
+                    # dont change i as it is now the index of the next element
+                else:
+                    i += 1
+            time.sleep(self.check_interval)
+
+    def wait_for_all(self):
+        self._wait_until_n_unfinished(0)
+        logger.info("All jobs finished.")
