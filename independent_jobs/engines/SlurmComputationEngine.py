@@ -14,12 +14,6 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
                                                do_clean_up=do_clean_up,
                                                submission_delay=0.01,
                                                max_jobs_in_queue=2000)
-
-    def create_batch_script(self, job_name, dispatcher_string):
-        command = "nice -n 10 " + dispatcher_string
-        
-        days, hours, minutes, seconds = Time.sec_to_all(self.batch_parameters.max_walltime)
-        walltime = '%d-%d:%d:%d' % (days, hours, minutes, seconds)
         
         # automatically set queue if not specified by user
         try:
@@ -42,6 +36,13 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
                 qos = "normal"
             
             logger.info("Infered slurm qos: %s", qos)
+            self.batch_parameters.qos = qos
+
+    def create_batch_script(self, job_name, dispatcher_string):
+        command = "nice -n 10 " + dispatcher_string
+        
+        days, hours, minutes, seconds = Time.sec_to_all(self.batch_parameters.max_walltime)
+        walltime = '%d-%d:%d:%d' % (days, hours, minutes, seconds)
         
         num_nodes = str(self.batch_parameters.nodes)
         # note memory is in megabyes
@@ -60,7 +61,7 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
 #SBATCH --output=%s
 #SBATCH --error=%s
 cd %s
-%s""" % (job_name, walltime, qos, num_nodes, memory, output, error, workdir,
+%s""" % (job_name, walltime, self.batch_parameters.qos, num_nodes, memory, output, error, workdir,
          command)
         
         return job_string
