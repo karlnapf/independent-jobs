@@ -1,7 +1,6 @@
 import os
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
-from independent_jobs.tools.FileSystem import FileSystem
 from independent_jobs.tools.Time import Time
 
 
@@ -17,7 +16,7 @@ class PBSComputationEngine(BatchClusterComputationEngine):
         command = "nice -n 10 " + dispatcher_string
         
         days, hours, minutes, seconds = Time.sec_to_all(self.batch_parameters.max_walltime)
-        walltime = '%d:%d:%d' % (days*24, hours, minutes, seconds)
+        walltime = '%d:%d:%d' % (days*24 + hours, minutes, seconds)
         
         num_nodes = "nodes=1:ppn=" + str(self.batch_parameters.nodes)
         memory = "pmem=" + str(self.batch_parameters.memory) + "gb"
