@@ -69,7 +69,7 @@ cd %s
 
     def submit_to_batch_system(self, job_string):
         # send job_string to batch command
-        outpipe, inpipe = popen2(self.submission_cmd)
+        outpipe, inpipe = popen2.popen2(self.submission_cmd)
         inpipe.write(job_string + os.linesep)
         inpipe.close()
         
