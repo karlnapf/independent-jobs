@@ -73,7 +73,7 @@ cd %s
         inpipe.write(job_string + os.linesep)
         inpipe.close()
         
-        job_id = outpipe.read().strip().split[" "][-1]
+        job_id = outpipe.read().strip().split(" ")[-1]
         outpipe.close()
         
         return job_id
