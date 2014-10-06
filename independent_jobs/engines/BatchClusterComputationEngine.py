@@ -58,8 +58,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     def _get_num_unfinished_jobs(self):
         return len(self.submitted_jobs)
     
-    def _insert_job_time_sorted(self, job_name):
-        self.submitted_jobs.append((job_name, time.time()))
+    def _insert_job_time_sorted(self, job_name, job_id):
+        self.submitted_jobs.append((job_name, time.time(), job_id))
         
         # sort list by second element (in place)
         self.submitted_jobs.sort(key=lambda tup: tup[1])
@@ -69,9 +69,6 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     
     def submit_wrapped_pbs_job(self, wrapped_job, job_name):
         job_folder = self.get_job_foldername(job_name)
-        
-        # track submitted (and unfinished) jobs and their start time
-        self._insert_job_time_sorted(job_name)
         
         # try to create folder if not yet exists
         job_filename = self.get_job_filename(job_name)
@@ -114,7 +111,11 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         f = open(job_folder + os.sep + "job_id", 'w')
         f.write(job_id + os.linesep)
         f.close()
+        
+        # track submitted (and unfinished) jobs and their start time
+        self._insert_job_time_sorted(job_name, job_id)
     
+    @abstractmethod
     def submit_to_batch_system(self, job_string):
         # send job_string to batch command
         outpipe, inpipe = popen2(self.submission_cmd)
@@ -164,7 +165,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     def _get_max_wait_time_exceed_jobs(self):
         names = []
         current_time = time.time()
-        for job_name, job_time in self.submitted_jobs:
+        for job_name, job_time, _ in self.submitted_jobs:
             if abs(current_time - job_time) > self.batch_parameters.max_walltime:
                 names += [job_name]
         return names
@@ -174,7 +175,10 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         logger.info("Re-submitting under name %s" % new_job_name)
         
         # remove from submitted list
-        self.submitted_jobs.remove(job_name)
+        for i in range(len(self.submitted_jobs)):
+            if self.submitted_jobs[i][0] == job_name:
+                del self.submitted_jobs[i]
+                break
         
         # load job from disc and re-submit under new name
         job_filename = self.get_job_filename(job_name)
@@ -194,6 +198,12 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         logger.info("Waiting for %s and %d other jobs" % (last_printed,
                                                           self._get_num_unfinished_jobs() - 1))
         while self._get_num_unfinished_jobs() > desired_num_unfinished:
+            # write file with all unfinished job_ids
+            job_ids = [self.submitted_jobs[i][2] for i in range(len(self.submitted_jobs))]
+            with open("unfinished_jobs.txt", "w+") as f:
+                for job_id in job_ids:
+                    f.write(job_id + os.linesep)
+            
             oldest = self._get_oldest_job_in_queue()
             if oldest != last_printed:
                 last_printed = oldest

@@ -1,4 +1,5 @@
 import os
+import popen2
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
 from independent_jobs.tools.Log import logger
@@ -65,3 +66,14 @@ cd %s
          command)
         
         return job_string
+
+    def submit_to_batch_system(self, job_string):
+        # send job_string to batch command
+        outpipe, inpipe = popen2(self.submission_cmd)
+        inpipe.write(job_string + os.linesep)
+        inpipe.close()
+        
+        job_id = outpipe.read().strip().split[" "][-1]
+        outpipe.close()
+        
+        return job_id
