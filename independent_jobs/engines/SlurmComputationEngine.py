@@ -18,26 +18,29 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         
         # automatically set queue if not specified by user
         try:
-            qos = self.batch_parameters.qos
+            self.batch_parameters.qos
         except AttributeError:
-            if self.batch_parameters.max_walltime <= 60 * 60 and \
-               self.batch_parameters.nodes <= 90:
-                qos = "short"
-            elif self.batch_parameters.max_walltime <= 60 * 60 * 24 and \
-                 self.batch_parameters.nodes <= 70:
-                qos = "normal"
-            elif self.batch_parameters.max_walltime <= 60 * 60 * 72 and \
-                 self.batch_parameters.nodes <= 20:
-                qos = "medium"
-            elif self.batch_parameters.max_walltime <= 60 * 60 * 24 and \
-                 self.batch_parameters.nodes <= 10:
-                qos = "long"
-            else:
-                logger.info("Unable to infer slurm qos. Setting to normal")
-                qos = "normal"
+            self.batch_parameters.qos = self._infer_slurm_qos(batch_parameters.max_walltime,
+                                                              batch_parameters.nodes)
+
+    def _infer_slurm_qos(self, max_walltime, nodes):
+        if max_walltime <= 60 * 60 and \
+           nodes <= 90:
+            qos = "short"
+        elif max_walltime <= 60 * 60 * 24 and \
+             nodes <= 70:
+            qos = "normal"
+        elif max_walltime <= 60 * 60 * 72 and \
+             nodes <= 20:
+            qos = "medium"
+        elif max_walltime <= 60 * 60 * 24 and \
+             nodes <= 10:
+            qos = "long"
+        else:
+            logger.warning("Unable to infer slurm qos. Setting to normal")
+            qos = "normal"
             
-            logger.info("Infered slurm qos: %s", qos)
-            self.batch_parameters.qos = qos
+        return qos
 
     def create_batch_script(self, job_name, dispatcher_string):
         command = "nice -n 10 " + dispatcher_string
@@ -50,8 +53,8 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         memory = str(self.batch_parameters.memory)
         workdir = self.get_job_foldername(job_name)
         
-        output = workdir + os.sep + "output.txt"
-        error = workdir + os.sep + "error.txt"
+        output = workdir + os.sep + BatchClusterComputationEngine.output_filename
+        error = workdir + os.sep + BatchClusterComputationEngine.error_filename
         
         job_string = """#!/bin/bash
 #SBATCH -J %s

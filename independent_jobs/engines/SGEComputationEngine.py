@@ -22,8 +22,8 @@ class SGEComputationEngine(BatchClusterComputationEngine):
         memory = str(self.batch_parameters.memory) + "G"
         workdir = self.get_job_foldername(job_name)
         
-        output = workdir + os.sep + "output.txt"
-        error = workdir + os.sep + "error.txt"
+        output = workdir + os.sep + BatchClusterComputationEngine.output_filename
+        error = workdir + os.sep + BatchClusterComputationEngine.error_filename
 
         job_string = \
 """#$ -S /bin/bash
