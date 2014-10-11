@@ -1,5 +1,7 @@
 import os
 
+from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
+
 
 def resubmit(job_dir, batch_engine):
     if not job_dir[-1] == os.sep:
@@ -10,3 +12,15 @@ def resubmit(job_dir, batch_engine):
         job_string = "".join(f.readlines())
             
     batch_engine.submit_to_batch_system(job_string)
+
+def rebuild_batch_script(directory, job_name, engine):
+    if directory[-1] != os.sep:
+        directory += os.sep
+    
+    job_filename = directory + BatchClusterComputationEngine.job_filename_ending
+    dispatcher_string = engine._get_dispatcher_string(job_filename)
+    script = engine.create_batch_script(job_name, dispatcher_string)
+    
+    # overwrite old
+    with open(directory + BatchClusterComputationEngine.batch_script_filename, "w+") as f:
+        f.write(script)
