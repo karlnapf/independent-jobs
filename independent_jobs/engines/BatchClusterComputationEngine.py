@@ -103,7 +103,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         # allow the queue to process things        
         time.sleep(self.submission_delay)
         
-        dispatcher_string = self.get_dispatcher_string(job_filename)
+        dispatcher_string = self._get_dispatcher_string(job_filename)
         
         job_string = self.create_batch_script(job_name, dispatcher_string)
         
