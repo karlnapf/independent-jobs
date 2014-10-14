@@ -107,10 +107,14 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         job_string = self.create_batch_script(job_name, dispatcher_string)
         
-        # put the custom parameter string in front if existing
+        # put the custom parameter string in front/end if existing
         if self.batch_parameters.parameter_prefix != "":
             job_string = os.linesep.join([self.batch_parameters.parameter_prefix,
                                          job_string])
+        
+        if self.batch_parameters.parameter_suffix != "":
+            job_string = os.linesep.join([job_string,
+                                          self.batch_parameters.parameter_suffix])
         
         f = open(job_folder + os.sep + BatchClusterComputationEngine.batch_script_filename, "w")
         f.write(job_string)
