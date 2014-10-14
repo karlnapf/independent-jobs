@@ -1,6 +1,7 @@
 import os
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
+from independent_jobs.tools.FileSystem import FileSystem
 
 
 def resubmit(job_dir, batch_engine):
@@ -10,7 +11,14 @@ def resubmit(job_dir, batch_engine):
     fname = job_dir + "batch_script"
     with open(fname, "r") as f:
         job_string = "".join(f.readlines())
-            
+    
+    # delete old output to not confuse user
+    output_fname = job_dir + BatchClusterComputationEngine.output_filename
+    error_fname = job_dir + BatchClusterComputationEngine.output_filename
+    
+    FileSystem.delete_dir_failsafe(output_fname)
+    FileSystem.delete_dir_failsafe(error_fname)
+    
     batch_engine.submit_to_batch_system(job_string)
 
 def rebuild_batch_script(directory, job_name, engine):
