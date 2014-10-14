@@ -111,7 +111,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         # but not as first line to avoid problems with #/bin/bash things
         if self.batch_parameters.parameter_prefix != "":
             lines = job_string.split(os.linesep)
-            dispatcher_string = os.linesep.join([lines[0],
+            job_string = os.linesep.join([lines[0],
                                                  self.batch_parameters.parameter_prefix] + lines[1:])
         
         f = open(job_folder + os.sep + BatchClusterComputationEngine.batch_script_filename, "w")
