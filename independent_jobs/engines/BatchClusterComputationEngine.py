@@ -78,9 +78,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     def _get_dispatcher_string(self, job_filename):
         lines = []
         lines.append("import socket")
-        lines.append("print(\"Job running on host \" + socket.gethostname())")
         lines.append("from independent_jobs.engines.BatchClusterComputationEngine import Dispatcher")
-        lines.append("from independent_jobs.tools.Log import Log")
+        lines.append("from independent_jobs.tools.Log import Log, logger")
+        lines.append("logger.info(\"Job running on host \" + socket.gethostname())")
         lines.append("Log.set_loglevel(%d)" % self.batch_parameters.loglevel)
         lines.append("filename=\"%s\"" % job_filename)
         lines.append("Dispatcher.dispatch(filename)")
