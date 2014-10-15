@@ -80,8 +80,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         lines.append("import socket")
         lines.append("from independent_jobs.engines.BatchClusterComputationEngine import Dispatcher")
         lines.append("from independent_jobs.tools.Log import Log, logger")
-        lines.append("logger.info(\"Job running on host \" + socket.gethostname())")
         lines.append("Log.set_loglevel(%d)" % self.batch_parameters.loglevel)
+        lines.append("logger.info(\"Job running on host \" + socket.gethostname())")
         lines.append("filename=\"%s\"" % job_filename)
         lines.append("Dispatcher.dispatch(filename)")
         
