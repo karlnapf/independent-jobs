@@ -13,7 +13,7 @@ def resubmit(job_dir, batch_engine):
     
     # delete old output to not confuse user
     output_fname = job_dir + BatchClusterComputationEngine.output_filename
-    error_fname = job_dir + BatchClusterComputationEngine.output_filename
+    error_fname = job_dir + BatchClusterComputationEngine.error_filename
     
     try:
         os.remove(output_fname)
