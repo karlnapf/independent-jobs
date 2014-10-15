@@ -1,7 +1,6 @@
 import os
 
 from independent_jobs.engines.BatchClusterComputationEngine import BatchClusterComputationEngine
-from independent_jobs.tools.FileSystem import FileSystem
 
 
 def resubmit(job_dir, batch_engine):
@@ -16,8 +15,11 @@ def resubmit(job_dir, batch_engine):
     output_fname = job_dir + BatchClusterComputationEngine.output_filename
     error_fname = job_dir + BatchClusterComputationEngine.output_filename
     
-    FileSystem.delete_dir_failsafe(output_fname)
-    FileSystem.delete_dir_failsafe(error_fname)
+    try:
+        os.remove(output_fname)
+        os.remove(error_fname)
+    except Exception:
+        pass
     
     batch_engine.submit_to_batch_system(job_string)
 
