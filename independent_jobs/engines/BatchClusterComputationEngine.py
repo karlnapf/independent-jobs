@@ -190,7 +190,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
             job_filename = self.get_job_filename(job_name)
             job = Serialization.deserialize_object(job_filename)
             
-            if abs(current_time - job_time) > job.walltime:
+            if abs(current_time - job_time) > job.walltime * 3600:
                 names += [job_name]
         return names
     
@@ -247,7 +247,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                     # load job ressources
                     job_filename = self.get_job_filename(job_name)
                     job = Serialization.deserialize_object(job_filename)
-                    logger.info("%s exceeded maximum waiting time of %d" 
+                    logger.info("%s exceeded maximum waiting time of %dh" 
                                 % (job_name, job.walltime))
                     self._resubmit(job_name)
                     
