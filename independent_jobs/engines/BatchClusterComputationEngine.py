@@ -245,8 +245,11 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
             # check for re-submissions
             if self.batch_parameters.resubmit_on_timeout:
                 for job_name in self._get_max_wait_time_exceed_jobs():
+                    # load job ressources
+                    job_filename = self.get_job_filename(job_name)
+                    job = Serialization.deserialize_object(job_filename)
                     logger.info("%s exceeded maximum waiting time of %d" 
-                                % (job_name, self.batch_parameters.max_walltime))
+                                % (job_name, job.walltime))
                     self._resubmit(job_name)
                     
             time.sleep(self.check_interval)
