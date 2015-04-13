@@ -190,7 +190,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
             job_filename = self.get_job_filename(job_name)
             job = Serialization.deserialize_object(job_filename)
             
-            if abs(current_time - job_time) > job.walltime * 3600:
+            if abs(current_time - job_time) > job.walltime:
                 names += [job_name]
         return names
     

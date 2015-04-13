@@ -19,7 +19,7 @@ class DummyComputation(object):
     
     def go_to_bed(self, sleep_time):
         job = DummyJob(ScalarResultAggregator(), sleep_time, 
-                       walltime=1, memory=1, nodes=1)
+                       walltime=60 * 60, memory=1, nodes=1)
         agg = self.engine.submit_job(job)
         return agg
 
