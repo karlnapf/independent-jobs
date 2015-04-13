@@ -18,7 +18,8 @@ class DummyComputation(object):
         self.engine = engine
     
     def go_to_bed(self, sleep_time):
-        job = DummyJob(ScalarResultAggregator(), sleep_time)
+        job = DummyJob(ScalarResultAggregator(), sleep_time, 
+                       walltime=1, memory=1, nodes=1)
         agg = self.engine.submit_job(job)
         return agg
 
@@ -59,7 +60,7 @@ class DummyJobTests(unittest.TestCase):
             shutil.rmtree(folder)
         except OSError:
             pass
-        batch_parameters = BatchClusterParameters(foldername=folder, max_walltime=8)
+        batch_parameters = BatchClusterParameters(foldername=folder)
         engine = SlurmComputationEngine(batch_parameters, check_interval=1)
         sleep_times = [2, -1]
         self.engine_helper(engine, sleep_times)
