@@ -35,7 +35,8 @@ class PBSResultAggregatorWrapper(JobResultAggregator):
             dump(self.wrapped_aggregator, f)
             f.close()
         
-            # store copy in working dir
+            # store copy in working dir, this only happens if aggregator implements the
+            # store_fire_and_forget_result method
             if self.store_fire_and_forget:
                 folder = "fire_and_forget_results"
                 try:
@@ -43,8 +44,7 @@ class PBSResultAggregatorWrapper(JobResultAggregator):
                 except OSError:
                     pass
                 
-                with open(folder + os.sep + self.job_name + "_aggregator.pkl", 'w+') as f:
-                    dump(self.wrapped_aggregator, f)
+                self.wrapped_aggregator.store_fire_and_forget_result(folder, self.job_name)
             
         
     def finalize(self):

@@ -22,3 +22,6 @@ class JobResultAggregator(object):
     def clean_up(self):
         raise NotImplementedError()
 
+    @abstractmethod
+    def store_fire_and_forget_result(self, folder, job_name):
+        pass
