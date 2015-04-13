@@ -7,7 +7,7 @@ from independent_jobs.tools.FileSystem import FileSystem
 
 
 class PBSResultAggregatorWrapper(JobResultAggregator):
-    def __init__(self, wrapped_aggregator, filename, job_name, do_clean_up = False):
+    def __init__(self, wrapped_aggregator, filename, job_name, do_clean_up = False, store_fire_and_forget=False):
         self.wrapped_aggregator = wrapped_aggregator
         self.filename = filename
         self.job_name = job_name
@@ -17,6 +17,9 @@ class PBSResultAggregatorWrapper(JobResultAggregator):
         
         # whether to delete job output
         self.do_clean_up = do_clean_up
+        
+        # whether to store all aggregators in the current working dir
+        self.store_fire_and_forget = store_fire_and_forget
     
     def submit_result(self, result):
         # NOTE: this happens on the PBS
@@ -31,6 +34,18 @@ class PBSResultAggregatorWrapper(JobResultAggregator):
             f = open(self.filename, 'w')
             dump(self.wrapped_aggregator, f)
             f.close()
+        
+            # store copy in working dir
+            if self.store_fire_and_forget:
+                folder = "fire_and_forget_results"
+                try:
+                    os.makedirs(folder)
+                except OSError:
+                    pass
+                
+                with open(folder + os.sep + self.job_name + "_aggregator.pkl", 'w+') as f:
+                    dump(self.wrapped_aggregator, f)
+            
         
     def finalize(self):
         # NOTE: This happens in the PBS engine, so not on the PBS

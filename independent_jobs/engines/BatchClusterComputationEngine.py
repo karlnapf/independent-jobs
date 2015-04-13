@@ -52,6 +52,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         # list of all jobs ever submitted
         self.all_jobs = []
+        
+        # whether to also store all aggregators in current working dir
+        self.store_fire_and_forget = False
     
     def get_aggregator_filename(self, job_name):
         job_folder = self.get_job_foldername(job_name)
@@ -181,7 +184,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         job.aggregator = PBSResultAggregatorWrapper(job.aggregator,
                                                     aggregator_filename,
                                                     job_name,
-                                                    self.do_clean_up)
+                                                    self.do_clean_up,
+                                                    self.store_fire_and_forget)
         
         self.submit_wrapped_pbs_job(job, job_name)
         
