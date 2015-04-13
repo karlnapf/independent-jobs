@@ -154,6 +154,10 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     def create_job_name(self):
         return FileSystem.get_unique_filename(self.batch_parameters.job_name_base)
     
+    def save_all_job_list(self):
+        with open(self.self_serialisation_fname, "w+") as f:
+            pickle.dump(self, f)
+    
     def submit_job(self, job):
         # first step: check how many jobs are there in the (internal, not cluster) queue, and if we
         # should wait for submission until this has dropped under a certain value
@@ -163,10 +167,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                         self.max_jobs_in_queue)
             self._wait_until_n_unfinished(self.max_jobs_in_queue)
         
-        # save myself every 1000 submissions
-        if len(self.all_jobs) % 1000 == 0:
-            with open(self.self_serialisation_fname, "w+") as f:
-                pickle.dump(self, f)
+        # save myself every few submissions (also done one wait_for_all is called)
+        if len(self.all_jobs) % 100 == 0:
+            self.save_all_job_list()
         
         # replace job's wrapped_aggregator by PBS wrapped_aggregator to allow
         # FS based communication
@@ -231,19 +234,20 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         for the oldest job in the queue.
         """
         
+        # save all job list to file for reconstructing results later
+        self.save_all_job_list()
+        
         last_printed = self._get_oldest_job_in_queue()
         logger.info("Waiting for %s and %d other jobs" % (last_printed,
                                                           self._get_num_unfinished_jobs() - 1))
         while self._get_num_unfinished_jobs() > desired_num_unfinished:
-            # write file with all unfinished job_ids
-            with open(self.self_serialisation_fname, "w+") as f:
-                pickle.dump(self, f)
             
             oldest = self._get_oldest_job_in_queue()
             if oldest != last_printed:
                 last_printed = oldest
                 logger.info("Waiting for %s and %d other jobs" % (last_printed,
                                                                   self._get_num_unfinished_jobs() - 1))
+                
             
             # delete all finished jobs from internal list
             i = 0
