@@ -163,6 +163,10 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                         self.max_jobs_in_queue)
             self._wait_until_n_unfinished(self.max_jobs_in_queue)
         
+        # save myself every 1000 submissions
+        if len(self.all_jobs) % 1000 == 0:
+            with open(self.self_serialisation_fname, "w+") as f:
+                pickle.dump(self, f)
         
         # replace job's wrapped_aggregator by PBS wrapped_aggregator to allow
         # FS based communication
