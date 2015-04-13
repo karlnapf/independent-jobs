@@ -7,7 +7,7 @@ from independent_jobs.tools.Log import logger
 
 
 class DummyJob(IndependentJob):
-    def __init__(self, aggregator, sleep_time, walltime, memory, nodes):
+    def __init__(self, aggregator, sleep_time, walltime=1, memory=1, nodes=1):
         IndependentJob.__init__(self, aggregator, walltime, memory, nodes)
         self.sleep_time = sleep_time
     
