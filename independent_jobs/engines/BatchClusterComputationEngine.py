@@ -208,7 +208,6 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         job_filename = self.get_job_filename(job_name)
         wrapped_job = Serialization.deserialize_object(job_filename)
         self.submit_wrapped_pbs_job(wrapped_job, new_job_name)
-        self._insert_job_time_sorted(new_job_name)
     
     def _wait_until_n_unfinished(self, desired_num_unfinished):
         """
