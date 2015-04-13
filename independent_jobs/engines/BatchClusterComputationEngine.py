@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from os import makedirs
 import os
+import pickle
 from popen2 import popen2
 import time
 
@@ -28,7 +29,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
     batch_script_filename = "batch_script"
     aggregator_filename = "aggregator.bin"
     job_id_filename = "job_id"
-    unfinished_jobs_filename = "unfinished_jobs.txt"
+    self_serialisation_fname = "serialised_engine.pkl"
     
     def __init__(self, batch_parameters, submission_cmd,
                  check_interval=10, do_clean_up=False, submission_delay=0.5,
@@ -218,10 +219,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                                                           self._get_num_unfinished_jobs() - 1))
         while self._get_num_unfinished_jobs() > desired_num_unfinished:
             # write file with all unfinished job_ids
-            job_ids = [self.submitted_jobs[i][2] for i in range(len(self.submitted_jobs))]
-            with open(self.unfinished_jobs_filename, "w+") as f:
-                for job_id in job_ids:
-                    f.write(job_id + os.linesep)
+            with open(self.self_serialisation_fname, "w+") as f:
+                pickle.dump(self, f)
             
             oldest = self._get_oldest_job_in_queue()
             if oldest != last_printed:
