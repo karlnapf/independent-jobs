@@ -60,7 +60,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         return os.sep.join([self.get_job_foldername(job_name), self.job_filename_ending])
     
     @abstractmethod
-    def create_batch_script(self, job_name, dispatcher_string):
+    def create_batch_script(self, job_name, dispatcher_string, walltime, memory, nodes):
         raise NotImplementedError()
     
     def _get_num_unfinished_jobs(self):
@@ -107,7 +107,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         
         dispatcher_string = self._get_dispatcher_string(job_filename)
         
-        job_string = self.create_batch_script(job_name, dispatcher_string)
+        # get computing ressource constraints from job
+        walltime, memory, nodes = wrapped_job.get_walltime_mem_nodes()
+        job_string = self.create_batch_script(job_name, dispatcher_string, walltime, memory, nodes)
         
         # put the custom parameter string in front if existing
         # but not as first line to avoid problems with #/bin/bash things
@@ -148,7 +150,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         return FileSystem.get_unique_filename(self.batch_parameters.job_name_base)
     
     def submit_job(self, job):
-        # first step: check how many jobs are there in the queue, and if we
+        # first step: check how many jobs are there in the (internal, not cluster) queue, and if we
         # should wait for submission until this has dropped under a certain value
         if self.max_jobs_in_queue > 0 and \
            self._get_num_unfinished_jobs() >= self.max_jobs_in_queue:

@@ -15,13 +15,6 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
                                                do_clean_up=do_clean_up,
                                                submission_delay=0.01,
                                                max_jobs_in_queue=2000)
-        
-        # automatically set queue if not specified by user
-        try:
-            self.batch_parameters.qos
-        except AttributeError:
-            self.batch_parameters.qos = self._infer_slurm_qos(batch_parameters.max_walltime,
-                                                              batch_parameters.nodes)
 
     def _infer_slurm_qos(self, max_walltime, nodes):
         if max_walltime <= 60 * 60 and \
@@ -33,7 +26,7 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         elif max_walltime <= 60 * 60 * 72 and \
              nodes <= 20:
             qos = "medium"
-        elif max_walltime <= 60 * 60 * 24 and \
+        elif max_walltime <= 60 * 60 * 168 and \
              nodes <= 10:
             qos = "long"
         else:
@@ -42,15 +35,18 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
             
         return qos
 
-    def create_batch_script(self, job_name, dispatcher_string):
+    def create_batch_script(self, job_name, dispatcher_string, walltime, memory, nodes):
         command = "nice -n 10 " + dispatcher_string
         
-        days, hours, minutes, seconds = Time.sec_to_all(self.batch_parameters.max_walltime)
+        qos = self._infer_slurm_qos(walltime,
+                                    nodes)
+        
+        days, hours, minutes, seconds = Time.sec_to_all(walltime)
         walltime = '%d-%d:%d:%d' % (days, hours, minutes, seconds)
         
-        num_nodes = str(self.batch_parameters.nodes)
+        num_nodes = str(nodes)
         # note memory is in megabyes
-        memory = str(self.batch_parameters.memory)
+        memory = str(memory)
         workdir = self.get_job_foldername(job_name)
         
         output = workdir + os.sep + BatchClusterComputationEngine.output_filename
@@ -65,7 +61,7 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
 #SBATCH --output=%s
 #SBATCH --error=%s
 cd %s
-%s""" % (job_name, walltime, self.batch_parameters.qos, num_nodes, memory, output, error, workdir,
+%s""" % (job_name, walltime, qos, num_nodes, memory, output, error, workdir,
          command)
         
         return job_string
