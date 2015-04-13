@@ -186,7 +186,11 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         names = []
         current_time = time.time()
         for job_name, job_time, _ in self.submitted_jobs:
-            if abs(current_time - job_time) > self.batch_parameters.max_walltime:
+            # load job ressources
+            job_filename = self.get_job_filename(job_name)
+            job = Serialization.deserialize_object(job_filename)
+            
+            if abs(current_time - job_time) > job.max_walltime:
                 names += [job_name]
         return names
     
