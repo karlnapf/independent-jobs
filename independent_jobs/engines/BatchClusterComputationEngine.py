@@ -47,8 +47,11 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
             raise ValueError("Submission command executable \"%s\" not found" % submission_cmd)
         
         # list of tuples of (job_name, submission_time), which is kept in sorted
-        # order by the time
+        # order by the time, only unfinished jobs
         self.submitted_jobs = []
+        
+        # list of all jobs ever submitted
+        self.all_jobs = []
     
     def get_aggregator_filename(self, job_name):
         job_folder = self.get_job_foldername(job_name)
@@ -68,6 +71,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         return len(self.submitted_jobs)
     
     def _insert_job_time_sorted(self, job_name, job_id):
+        self.all_jobs += [job_name]
         self.submitted_jobs.append((job_name, time.time(), job_id))
         
         # sort list by second element (in place)
@@ -198,10 +202,16 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         new_job_name = self.create_job_name()
         logger.info("Re-submitting under name %s" % new_job_name)
         
-        # remove from submitted list
+        # remove from unfinished jobs list
         for i in range(len(self.submitted_jobs)):
             if self.submitted_jobs[i][0] == job_name:
                 del self.submitted_jobs[i]
+                break
+        
+        # remove from all jobs list
+        for i in range(len(self.all)):
+            if self.all_jobs[i] == job_name:
+                del self.all_jobs[i]
                 break
         
         # load job from disc and re-submit under new name
