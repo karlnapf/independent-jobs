@@ -1,0 +1,2 @@
+include versioneer.py
+include independent_jobs/_version.py
