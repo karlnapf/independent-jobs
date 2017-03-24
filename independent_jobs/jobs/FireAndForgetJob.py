@@ -39,7 +39,8 @@ def store_results(fname=os.path.expanduser("~") + os.sep + "results.txt", **kwar
             df.to_csv(fname)
             write_success = True
         except IOError:
-            print("IOError writing to csv ... trying again in 1s.")
+            sleep_time = np.random.randint(5)
+            print("IOError writing to csv ... trying again in %d." % sleep_time)
             time.sleep(1)
 
 
