@@ -220,7 +220,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
                 break
         
         # remove from all jobs list
-        for i in range(len(self.all)):
+        for i in range(len(self.all_jobs)):
             if self.all_jobs[i] == job_name:
                 del self.all_jobs[i]
                 break
