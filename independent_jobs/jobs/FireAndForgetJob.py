@@ -1,13 +1,14 @@
-import numpy as np
+from abc import abstractmethod
 import os
 import time
 
+from independent_jobs.aggregators.ScalarResultAggregator import ScalarResultAggregator
 from independent_jobs.aggregators.SingleResultAggregator import SingleResultAggregator
 from independent_jobs.jobs.IndependentJob import IndependentJob
 from independent_jobs.tools.Log import logger
-
+import numpy as np
 import pandas as pd
-from abc import abstractmethod
+
 
 def store_results(fname=os.path.expanduser("~") + os.sep + "results.txt", **kwargs):
     # add filename if only path is given
@@ -46,7 +47,7 @@ def store_results(fname=os.path.expanduser("~") + os.sep + "results.txt", **kwar
 
 class FireAndForgetJob(IndependentJob):
     def __init__(self, db_fname, result_name="result", **param_dict):
-        IndependentJob.__init__(self, SingleResultAggregator())
+        IndependentJob.__init__(self, ScalarResultAggregator())
         
         self.db_fname = db_fname
         self.param_dict = param_dict
@@ -61,6 +62,7 @@ class FireAndForgetJob(IndependentJob):
         logger.info("Computing result for %s" % param_string)
         result = self.compute_result()
         self.store_results(result)
+        self.aggregator.submit_result(result)
     
     def store_results(self, result):
         logger.info("Storing results in %s" % self.db_fname)
