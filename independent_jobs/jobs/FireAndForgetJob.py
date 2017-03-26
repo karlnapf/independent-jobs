@@ -1,21 +1,16 @@
 from abc import abstractmethod
+import itertools
 import os
 import time
-import itertools
 
 from independent_jobs.aggregators.ScalarResultAggregator import ScalarResultAggregator
-from independent_jobs.aggregators.SingleResultAggregator import SingleResultAggregator
 from independent_jobs.jobs.IndependentJob import IndependentJob
 from independent_jobs.tools.Log import logger
 import numpy as np
 import pandas as pd
 
 
-def store_results(fname=os.path.expanduser("~") + os.sep + "results.txt", **kwargs):
-    # add filename if only path is given
-    if fname[-1] == os.sep:
-        fname += "results.txt"
-    
+def store_results(fname, **kwargs):
     # create result dir if wanted
     if os.sep in fname:
         try:
@@ -26,19 +21,31 @@ def store_results(fname=os.path.expanduser("~") + os.sep + "results.txt", **kwar
     
     # use current time as index for the dataframe
     current_time = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
-    new_df = pd.DataFrame([[kwargs[k] for k in kwargs.keys()]], index=[current_time], columns=kwargs.keys())
+    columns = list(kwargs.keys())
+    df = pd.DataFrame([[kwargs[k] for k in columns]], index=[current_time], columns=columns)
     
+    # check whether to append, re-write (since keys changed), or write from scratch
     if os.path.exists(fname):
-        df = pd.read_csv(fname, index_col=0)
-        df = df.append(new_df)
+        old_keys = pd.read_csv(fname, index_col=0, nrows=1).keys()
+        
+        if set(old_keys) == set(kwargs.keys()):
+            append = True
+        else:
+            old_df = pd.read_csv(fname, index_col=0)
+            df = old_df.append(df)
+            append = False
     else:
-        df = new_df
+        append = False
 
     # very crude protection against conflicting access from parallel processes
     write_success = False
     while not write_success:
         try:
-            df.to_csv(fname)
+            if append:
+                with open(fname, 'a') as f:
+                    df.to_csv(f, header=False)
+            else:
+                df.to_csv(fname)
             write_success = True
         except IOError:
             sleep_time = np.random.randint(5)
@@ -60,6 +67,9 @@ def extract_array(fname, param_names, result_name="result",
     with open(fname) as f:
         df = pd.read_csv(f)
     
+    for k, v in conditionals.items():
+        df = df.loc[df[k] == v]
+    
     param_values = {}
     for param in param_names:
         values = np.sort(np.unique(df[param]))
@@ -73,7 +83,6 @@ def extract_array(fname, param_names, result_name="result",
     
     for comb in all_combs:
         masks = [df[param] == comb[i] for i, param in enumerate(param_names)]
-        masks += [df[k]==v for k,v in conditionals.items()]
         
         lines = df
         for mask in masks:
