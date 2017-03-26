@@ -138,6 +138,9 @@ class FireAndForgetJob(IndependentJob):
         result = self.compute_result()
         self.store_results(result)
         self.aggregator.submit_result(result)
+        
+        # the engine will not call this, as it "forgets"
+        self.aggregator.clean_up()
     
     def store_results(self, result):
         logger.info("Storing results in %s" % self.db_fname)

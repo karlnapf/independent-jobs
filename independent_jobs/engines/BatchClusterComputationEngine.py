@@ -10,6 +10,7 @@ from independent_jobs.engines.IndependentComputationEngine import IndependentCom
 from independent_jobs.tools.FileSystem import FileSystem
 from independent_jobs.tools.Log import logger
 from independent_jobs.tools.Serialization import Serialization
+from independent_jobs.jobs.FireAndForgetJob import FireAndForgetJob
 
 
 class Dispatcher(object):
@@ -139,8 +140,9 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         f.write(job_id + os.linesep)
         f.close()
         
-        # track submitted (and unfinished) jobs and their start time
-        self._insert_job_time_sorted(job_name, job_id)
+        if not isinstance(wrapped_job, FireAndForgetJob):
+            # track submitted (and unfinished) jobs and their start time
+            self._insert_job_time_sorted(job_name, job_id)
     
     @abstractmethod
     def submit_to_batch_system(self, job_string):
@@ -165,7 +167,8 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         # first step: check how many jobs are there in the (internal, not cluster) queue, and if we
         # should wait for submission until this has dropped under a certain value
         if self.max_jobs_in_queue > 0 and \
-           self._get_num_unfinished_jobs() >= self.max_jobs_in_queue:
+           self._get_num_unfinished_jobs() >= self.max_jobs_in_queue and \
+           not isinstance(job, FireAndForgetJob): # never block for fire and forget jobs
             logger.info("Reached maximum number of %d unfinished jobs in queue." % 
                         self.max_jobs_in_queue)
             self._wait_until_n_unfinished(self.max_jobs_in_queue)
