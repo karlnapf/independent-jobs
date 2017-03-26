@@ -46,12 +46,14 @@ def store_results(fname=os.path.expanduser("~") + os.sep + "results.txt", **kwar
             time.sleep(1)
 
 def extract_array(fname, param_names, result_name="result",
-                  non_existing=np.nan, redux_funs=[np.mean], return_param_values=True):
+                  non_existing=np.nan, redux_funs=[np.mean], return_param_values=True,
+                  conditionals={}):
     """
     Given a csv file (as e.g. product by FireAndForgetJob, extraxts an
     array where each dimension corresponds to a provided parameter, and
     each element is a redux (e.g. mean) of all results (of given same)
     for the parameter combinations.
+    An optional set of additional conditions can be specified.
     
     A default value can be specified.
     """
@@ -71,6 +73,7 @@ def extract_array(fname, param_names, result_name="result",
     
     for comb in all_combs:
         masks = [df[param] == comb[i] for i, param in enumerate(param_names)]
+        masks += [df[k]==v for k,v in conditionals.items()]
         
         lines = df
         for mask in masks:
@@ -88,14 +91,15 @@ def extract_array(fname, param_names, result_name="result",
         return results, param_values
 
 def best_parameters(db_fname, param_names, result_name, selector=np.nanmin,
-                    redux_fun=np.nanmean, plot=False):
+                    redux_fun=np.nanmean, plot=False, conditionals={}):
     """
     Extracts the best choice of parameters using @see extract_array
     """
     results, param_values = extract_array(db_fname,
                             result_name=result_name,
                             param_names=param_names,
-                            redux_funs=[redux_fun])
+                            redux_funs=[redux_fun],
+                            conditionals=conditionals)
     
     results = results[0]
 
