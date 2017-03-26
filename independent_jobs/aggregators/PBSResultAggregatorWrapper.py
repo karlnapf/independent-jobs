@@ -64,4 +64,4 @@ class PBSResultAggregatorWrapper(JobResultAggregator):
 
     def clean_up(self):
         if self.do_clean_up:
-            FileSystem.delete_dir_failsafe(os.sep.join(self.filename.split(os.sep)[:-1]))
+            FileSystem.delete_dir_failsafe(os.path.split(self.filename)[0])
