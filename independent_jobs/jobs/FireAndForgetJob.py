@@ -121,12 +121,17 @@ def best_parameters(db_fname, param_names, result_name, selector=np.nanmin,
     return best_params, selector(results)
 
 class FireAndForgetJob(IndependentJob):
-    def __init__(self, db_fname, result_name="result", **param_dict):
+    def __init__(self, db_fname, result_name="result", seed=None, **param_dict):
         IndependentJob.__init__(self, ScalarResultAggregator())
         
         self.db_fname = db_fname
         self.param_dict = param_dict
         self.result_name = result_name
+        
+        if seed is None:
+            # if no seed is set unsigned 32bit int, and store
+            seed = np.random.randint(2**32-1)
+        self.seed = seed
     
     @abstractmethod
     def compute_result(self):
@@ -134,20 +139,30 @@ class FireAndForgetJob(IndependentJob):
     
     def compute(self):
         param_string = ",".join(["%s=%s" % (str(k), str(v)) for k, v in self.param_dict.items()])
+
+        logger.info("Setting numpy random seed to %d" % self.seed)
+        np.random.seed(self.seed)
+
         logger.info("Computing result for %s" % param_string)
+        start_time = time.time()
         result = self.compute_result()
-        self.store_results(result)
+        end_time = time.time()
+        runtime = end_time - start_time
+        
+        self.store_results(result, runtime)
         self.aggregator.submit_result(result)
         
         # the engine will not call this, as it "forgets"
         self.aggregator.clean_up()
     
-    def store_results(self, result):
+    def store_results(self, result, runtime):
         logger.info("Storing results in %s" % self.db_fname)
         submit_dict = {}
         for k, v in self.param_dict.items():
             submit_dict[k] = v
         submit_dict[self.result_name] = result
+        submit_dict["_runtime"] = runtime
+        submit_dict["_seed"] = self.seed
         store_results(self.db_fname, **submit_dict)
 
 class DummyFireAndForgetJob(FireAndForgetJob):
