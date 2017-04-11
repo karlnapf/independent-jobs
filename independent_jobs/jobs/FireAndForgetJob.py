@@ -70,29 +70,16 @@ def extract_array(fname, param_names, result_name="result",
     for k, v in conditionals.items():
         df = df.loc[df[k] == v]
     
-    param_values = {}
-    for param in param_names:
-        values = np.sort(np.unique(df[param]))
-        values = values[~np.isnan(values)]
-        param_values[param] = values
-    
-    sizes = [len(param_values[param]) for param in param_names]
+    sizes = [df[param_name].nunique() for param_name in param_names]
+    param_values = {param_name: np.sort(df[param_name].unique()) for param_name in param_names}
     results = [np.zeros(tuple(sizes)) + non_existing for _ in redux_funs]
     
-    all_combs = itertools.product(*[param_values[param] for param in param_names])
+    redux = df.groupby(param_names)[result_name].agg(redux_funs)
     
-    for comb in all_combs:
-        masks = [df[param] == comb[i] for i, param in enumerate(param_names)]
-        
-        lines = df
-        for mask in masks:
-            lines = lines[mask]
-        
-        if len(lines) > 0:
-            for j, redux_fun in enumerate(redux_funs):
-                result = redux_fun(lines[result_name].values)
-                ind_array = tuple([np.where(param_values[param] == comb[i])[0][0] for i, param in enumerate(param_names)])
-                results[j][ind_array] = result
+    for p in redux.index:
+        index = np.array([np.where(param_values[param_name]==p[i])[0][0] for i,param_name in enumerate(param_names)])
+        for i in range(len(results)):
+            results[i][index] = redux[redux_funs[i].__name__][p]
 
     if not return_param_values:
         return results
@@ -138,7 +125,7 @@ class FireAndForgetJob(IndependentJob):
         raise NotImplementedError()
     
     def compute(self):
-        param_string = ",".join(["%s=%s" % (str(k), str(v)) for k, v in self.param_dict.items()])
+        param_string = ", ".join(["%s=%s" % (str(k), str(v)) for k, v in self.param_dict.items()])
 
         logger.info("Setting numpy random seed to %d" % self.seed)
         np.random.seed(self.seed)
