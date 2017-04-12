@@ -74,12 +74,24 @@ def extract_array(fname, param_names, result_name="result",
     param_values = {param_name: np.sort(df[param_name].unique()) for param_name in param_names}
     results = [np.zeros(tuple(sizes)) + non_existing for _ in redux_funs]
     
-    redux = df.groupby(param_names)[result_name].agg(redux_funs)
+    # compute aggregate for each unique appearance of all parameters
+    redux = df.groupby(param_names, as_index=False)[result_name].agg(redux_funs)
     
-    for p in redux.index:
-        index = np.array([np.where(param_values[param_name]==p[i])[0][0] for i,param_name in enumerate(param_names)])
-        for i in range(len(results)):
-            results[i][index] = redux[redux_funs[i].__name__][p]
+    # since not all parameter combinations might be computed, iterate and pull out computed ones
+    all_combs = itertools.product(*[param_values[param_name] for param_name in param_names])
+    for comb in all_combs:
+        # parameter combination was computed
+        if comb in redux.index:
+            # find index in result array
+            index = []
+            for i, param_name in enumerate(param_names):
+                # we know that it is in there here
+                index += [np.where(param_values[param_name] == comb[i])[0][0]]
+            index = tuple(index)
+            
+            # extract results
+            for i, redux_fun in enumerate(redux_funs):
+                results[i][index] = redux.loc[comb][result_name][redux_fun.__name__]
 
     if not return_param_values:
         return results
@@ -87,7 +99,7 @@ def extract_array(fname, param_names, result_name="result",
         return results, param_values
 
 def best_parameters(db_fname, param_names, result_name, selector=np.nanmin,
-                    redux_fun=np.nanmean, plot=False, conditionals={}):
+                    redux_fun=np.nanmean, conditionals={}):
     """
     Extracts the best choice of parameters using @see extract_array
     """
@@ -117,7 +129,7 @@ class FireAndForgetJob(IndependentJob):
         
         if seed is None:
             # if no seed is set unsigned 32bit int, and store
-            seed = np.random.randint(2**32-1)
+            seed = np.random.randint(2 ** 32 - 1)
         self.seed = seed
     
     @abstractmethod
