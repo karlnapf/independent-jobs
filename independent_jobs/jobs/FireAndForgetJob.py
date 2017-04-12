@@ -79,19 +79,12 @@ def extract_array(fname, param_names, result_name="result",
     
     # since not all parameter combinations might be computed, iterate and pull out computed ones
     all_combs = itertools.product(*[param_values[param_name] for param_name in param_names])
-    for comb in all_combs:
+    for index, comb in enumerate(all_combs):
         # parameter combination was computed
         if comb in redux.index:
-            # find index in result array
-            index = []
-            for i, param_name in enumerate(param_names):
-                # we know that it is in there here
-                index += [np.where(param_values[param_name] == comb[i])[0][0]]
-            index = tuple(index)
-            
-            # extract results
+            # extract results and put them in the right place
             for i, redux_fun in enumerate(redux_funs):
-                results[i][index] = redux.loc[comb][result_name][redux_fun.__name__]
+                results[i][np.unravel_index(index, tuple(sizes))] = redux.loc[comb][result_name][redux_fun.__name__]
 
     if not return_param_values:
         return results
