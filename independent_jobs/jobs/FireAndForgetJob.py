@@ -84,7 +84,7 @@ def extract_array(fname, param_names, result_name="result",
         if comb in redux.index:
             # extract results and put them in the right place
             for i, redux_fun in enumerate(redux_funs):
-                results[i][np.unravel_index(index, tuple(sizes))] = redux.loc[comb][result_name][redux_fun.__name__]
+                results[i][np.unravel_index(index, tuple(sizes))] = redux.loc[comb][redux_fun.__name__]
 
     if not return_param_values:
         return results
