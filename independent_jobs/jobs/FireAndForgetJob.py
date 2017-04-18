@@ -69,6 +69,8 @@ def extract_array(fname, param_names, result_name="result",
     
     for k, v in conditionals.items():
         df = df.loc[df[k] == v]
+        if k in param_names:
+            param_names.remove(k)
     
     sizes = [df[param_name].nunique() for param_name in param_names]
     param_values = {param_name: np.sort(df[param_name].unique()) for param_name in param_names}
