@@ -72,8 +72,8 @@ def extract_array(fname, param_names, result_name="result",
         if k in param_names:
             param_names.remove(k)
     
-    sizes = [df[param_name].nunique() for param_name in param_names]
     param_values = {param_name: np.sort(df[param_name].unique()) for param_name in param_names}
+    sizes = [len(param_values[param_name]) for param_name in param_names]
     results = [np.zeros(tuple(sizes)) + non_existing for _ in redux_funs]
     
     # compute aggregate for each unique appearance of all parameters
@@ -82,11 +82,13 @@ def extract_array(fname, param_names, result_name="result",
     # since not all parameter combinations might be computed, iterate and pull out computed ones
     all_combs = itertools.product(*[param_values[param_name] for param_name in param_names])
     for index, comb in enumerate(all_combs):
+        result_ind = np.unravel_index(index, tuple(sizes))
+
         # parameter combination was computed
         if comb in redux.index:
             # extract results and put them in the right place
             for i, redux_fun in enumerate(redux_funs):
-                results[i][np.unravel_index(index, tuple(sizes))] = redux.loc[comb][redux_fun.__name__]
+                results[i][result_ind] = redux.loc[comb][redux_fun.__name__]
 
     if not return_param_values:
         return results
