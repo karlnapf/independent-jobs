@@ -62,6 +62,8 @@ def extract_array(fname, param_names, result_name="result",
     for the parameter combinations.
     An optional set of additional conditions can be specified.
     
+    Empty parameter names lead to just aggregating (sliced by conditionals) the results.
+    
     A default value can be specified.
     """
     with open(fname) as f:
@@ -71,6 +73,10 @@ def extract_array(fname, param_names, result_name="result",
         df = df.loc[df[k] == v]
         if k in param_names:
             param_names.remove(k)
+    
+    # no parameter names means just return the aggregated values for the (sliced) result
+    if len(param_names) == 0:
+        return np.array([redux(df[result_name]) for redux in redux_funs])
     
     param_values = {param_name: np.sort(df[param_name].unique()) for param_name in param_names}
     sizes = [len(param_values[param_name]) for param_name in param_names]
