@@ -78,7 +78,8 @@ def extract_array(fname, param_names, result_name="result",
     if len(param_names) == 0:
         return np.array([redux(df[result_name]) for redux in redux_funs])
     
-    param_values = {param_name: np.sort(df[param_name].unique()) for param_name in param_names}
+    param_values = {param_name: np.sort(df[param_name].dropna().unique()) for param_name in param_names}
+        
     sizes = [len(param_values[param_name]) for param_name in param_names]
     results = [np.zeros(tuple(sizes)) + non_existing for _ in redux_funs]
     
