@@ -53,7 +53,7 @@ def store_results(fname, **kwargs):
             time.sleep(1)
 
 def extract_array(fname, param_names, result_name="result",
-                  non_existing=np.nan, redux_funs=[np.mean], return_param_values=True,
+                  non_existing=np.nan, redux_funs=[np.nanmean], return_param_values=True,
                   conditionals={}):
     """
     Given a csv file (as e.g. product by FireAndForgetJob, extraxts an
