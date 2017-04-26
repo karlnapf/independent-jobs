@@ -67,7 +67,7 @@ def extract_array(fname, param_names, result_name="result",
     A default value can be specified.
     """
     with open(fname) as f:
-        df = pd.read_csv(f, error_bad_lines=False )
+        df = pd.read_csv(f, error_bad_lines=False, warn_bad_lines=False)
     
     for k, v in conditionals.items():
         df = df.loc[df[k] == v]
