@@ -7,7 +7,7 @@ from independent_jobs.tools.Time import Time
 
 
 class SlurmComputationEngine(BatchClusterComputationEngine):
-    def __init__(self, batch_parameters, check_interval=10, do_clean_up=False):
+    def __init__(self, batch_parameters, check_interval=10, do_clean_up=False, partition=None):
         BatchClusterComputationEngine.__init__(self,
                                                batch_parameters=batch_parameters,
                                                check_interval=check_interval,
@@ -15,6 +15,8 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
                                                do_clean_up=do_clean_up,
                                                submission_delay=0.01,
                                                max_jobs_in_queue=2000)
+        
+        self.partition=partition
 
     def _infer_slurm_qos(self, max_walltime, nodes):
         if max_walltime <= 60 * 60 and \
@@ -52,19 +54,22 @@ class SlurmComputationEngine(BatchClusterComputationEngine):
         output = workdir + os.sep + BatchClusterComputationEngine.output_filename
         error = workdir + os.sep + BatchClusterComputationEngine.error_filename
         
-        job_string = """#!/bin/bash
-#SBATCH -J %s
-#SBATCH --time=%s
-#SBATCH --qos=%s
-#SBATCH -n %s
-#SBATCH --mem=%s
-#SBATCH --output=%s
-#SBATCH --error=%s
-cd %s
-%s""" % (job_name, walltime, qos, num_nodes, memory, output, error, workdir,
-         command)
+        job_strings = ["#!/bin/bash"]
+        job_strings += ["#SBATCH -J %s" % job_name]
+        job_strings += ["#SBATCH --time=%s" % walltime]
+        job_strings += ["#SBATCH --qos=%s" % qos]
+        job_strings += ["#SBATCH -n %s" % num_nodes]
+        job_strings += ["#SBATCH --mem=%s" % memory]
+        job_strings += ["#SBATCH --output=%s" % output]
+        job_strings += ["#SBATCH --error=%s" % error]
         
-        return job_string
+        if self.partition is not None:
+            job_strings += ["#SBATCH --partition=%s" % self.partition]
+        
+        job_strings += ["cd %s" % workdir]
+        job_strings += ["%s" % command]
+        
+        return os.linesep.join(job_strings)
 
     def submit_to_batch_system(self, job_string):
         # send job_string to batch command
