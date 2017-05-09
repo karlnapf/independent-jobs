@@ -2,6 +2,7 @@ from abc import abstractmethod
 import itertools
 import os
 import time
+import sys
 
 from independent_jobs.aggregators.ScalarResultAggregator import ScalarResultAggregator
 from independent_jobs.jobs.IndependentJob import IndependentJob
@@ -9,6 +10,10 @@ from independent_jobs.tools.Log import logger
 import numpy as np
 import pandas as pd
 
+try:
+    import portalocker
+except ImportError:
+    logger.warning("portalocker not found, using non-exclusive file access")
 
 def store_results(fname, **kwargs):
     # create result dir if wanted
@@ -43,13 +48,19 @@ def store_results(fname, **kwargs):
         try:
             if append:
                 with open(fname, 'a') as f:
+                    if "portalocker" in sys.modules:
+                        logger.info("Trying to lock %s" % fname)
+                        portalocker.lock(f, portalocker.LOCK_EX)
                     df.to_csv(f, header=False)
+                    if "portalocker" in sys.modules:
+                        portalocker.unlock(f)
+                        logger.info("Unlocking %s" % fname)
             else:
                 df.to_csv(fname)
             write_success = True
         except IOError:
             sleep_time = np.random.randint(5)
-            print("IOError writing to csv ... trying again in %d." % sleep_time)
+            logger.info("IOError writing to csv ... trying again in %d." % sleep_time)
             time.sleep(1)
 
 def extract_array(fname, param_names, result_name="result",
