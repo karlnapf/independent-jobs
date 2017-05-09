@@ -42,26 +42,17 @@ def store_results(fname, **kwargs):
     else:
         append = False
 
-    # very crude protection against conflicting access from parallel processes
-    write_success = False
-    while not write_success:
-        try:
-            if append:
-                with open(fname, 'a') as f:
-                    if "portalocker" in sys.modules:
-                        logger.info("Trying to lock %s" % fname)
-                        portalocker.lock(f, portalocker.LOCK_EX)
-                    df.to_csv(f, header=False)
-                    if "portalocker" in sys.modules:
-                        portalocker.unlock(f)
-                        logger.info("Unlocking %s" % fname)
-            else:
-                df.to_csv(fname)
-            write_success = True
-        except IOError:
-            sleep_time = np.random.randint(5)
-            logger.info("IOError writing to csv ... trying again in %d." % sleep_time)
-            time.sleep(1)
+    if append:
+        with open(fname, 'a') as f:
+            if "portalocker" in sys.modules:
+                logger.info("Trying to lock %s" % fname)
+                portalocker.lock(f, portalocker.LOCK_EX)
+            df.to_csv(f, header=False)
+            if "portalocker" in sys.modules:
+                portalocker.unlock(f)
+                logger.info("Unlocking %s" % fname)
+    else:
+        df.to_csv(fname)
 
 def extract_array(fname, param_names, result_name="result",
                   non_existing=np.nan, redux_funs=[np.nanmean], return_param_values=True,
