@@ -31,7 +31,7 @@ if __name__ == '__main__':
     # the serial one runs everything locally
     engine = SerialComputationEngine()
 #     engine = SGEComputationEngine(batch_parameters)
-    engine = SlurmComputationEngine(batch_parameters)
+#     engine = SlurmComputationEngine(batch_parameters)
 
     # On submission, the engine returns aggregators that can be
     # used to retreive results after potentially doing postprocessing
