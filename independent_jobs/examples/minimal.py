@@ -4,6 +4,7 @@ from os.path import expanduser
 from independent_jobs.aggregators.ScalarResultAggregator import ScalarResultAggregator
 from independent_jobs.engines.BatchClusterParameters import BatchClusterParameters
 from independent_jobs.engines.SerialComputationEngine import SerialComputationEngine
+from independent_jobs.engines.SlurmComputationEngine import SlurmComputationEngine
 from independent_jobs.examples.MyJob import MyJob
 from independent_jobs.tools.Log import Log
 from independent_jobs.tools.Log import logger
@@ -30,7 +31,7 @@ if __name__ == '__main__':
     # the serial one runs everything locally
     engine = SerialComputationEngine()
 #     engine = SGEComputationEngine(batch_parameters)
-#     engine = SlurmComputationEngine(batch_parameters)
+    engine = SlurmComputationEngine(batch_parameters)
 
     # On submission, the engine returns aggregators that can be
     # used to retreive results after potentially doing postprocessing
