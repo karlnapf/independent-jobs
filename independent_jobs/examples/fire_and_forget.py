@@ -18,15 +18,15 @@ def visualise_array_2d(Xs, Ys, A, samples=None, ax=None):
     Simple visualisation method for illustration purposes
     """
     if ax is None:
-        fig=plt.figure()
+        fig = plt.figure()
         ax = fig.add_subplot(111)
 
-    vmin=np.nanmin(A)
-    vmax=np.nanmax(A)
+    vmin = np.nanmin(A)
+    vmax = np.nanmax(A)
     heatmap = ax.pcolor(Xs, Ys, A.T, cmap='gray', vmin=vmin, vmax=vmax)
     heatmap.cmap.set_under('magenta')
     
-    colorbar=plt.colorbar(heatmap, ax=ax)
+    colorbar = plt.colorbar(heatmap, ax=ax)
     colorbar.set_clim(vmin=vmin, vmax=vmax)
     
     if samples is not None:
@@ -56,13 +56,14 @@ if __name__ == '__main__':
     # here are some example parameters for jobs
     # we here create all combinations and then shuffle them
     # this randomizes the runs over the parameter space
-    params_x = np.linspace(-3,3,num=25)
-    params_y = np.linspace(-2,2,num=12)
+    params_x = np.linspace(-3, 3, num=25)
+    params_y = np.linspace(-2, 2, num=12)
     all_parameters = itertools.product(params_x, params_y)
     all_parameters = list(all_parameters)
     shuffle(all_parameters)
+    print "Number of parameter combinations:", len(all_parameters)
     
-    for params in all_parameters[:len(all_parameters)/10]:
+    for params in all_parameters[:len(all_parameters) / 300]:
         x = params[0]
         y = params[1]
         # note there are no aggregators and no result instances
@@ -77,10 +78,12 @@ if __name__ == '__main__':
     # extract and plot an array over the parameters
     # automatically find best parameters
     results, param_values = extract_array(db_fname, param_names=["x", "y"],
-                  result_name="my_result_name")
+                  result_name="my_result_name", redux_funs=[np.nanmean])
     best_params = best_parameters(db_fname, param_names=["x", "y"], result_name="my_result_name",
-                    selector=np.nanmin)
+                    selector=np.nanmin, redux_fun=np.nanmean)
     print "best parameters:", best_params
+    
+    # plot stuff
     try:
         import matplotlib.pyplot as plt
         visualise_array_2d(param_values["x"], param_values["y"], results[0])
