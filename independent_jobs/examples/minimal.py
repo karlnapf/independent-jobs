@@ -16,7 +16,7 @@ if __name__ == '__main__':
     this script, we can collect results from the cluster and potentially
     submit more jobs.
     """
-    Log.set_loglevel(logger.info)
+    Log.set_loglevel(10)
     
     # oflder for all job files
     home = expanduser("~")
