@@ -1,14 +1,21 @@
 from abc import abstractmethod
+from distutils.version import StrictVersion
 import itertools
 import os
-import time
 import sys
+import time
 
 from independent_jobs.aggregators.ScalarResultAggregator import ScalarResultAggregator
 from independent_jobs.jobs.IndependentJob import IndependentJob
 from independent_jobs.tools.Log import logger
 import numpy as np
 import pandas as pd
+
+pd_version_at_least="0.19.2"
+if StrictVersion(pd.__version__) < StrictVersion(pd_version_at_least):
+    print "Fire and forget functionality might be incompatible with the "\
+        "pandas version you are using (%s). Upgrade to at least %s to get "\
+        "rid of this message." % (pd.__version__, pd_version_at_least)
 
 try:
     import portalocker

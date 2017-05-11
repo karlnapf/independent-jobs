@@ -8,10 +8,15 @@ import numpy as np
 
 class MyFireAndForgetJob(FireAndForgetJob):
     """
-    Minimal fire and forget job that returns a random number after a random delay
+    Minimal fire and forget job that takes two parameters and returns
+    a noisy sum of their squares after a random delay.
     """
-    def __init__(self, db_fname, result_name="result", **param_dict):
-        FireAndForgetJob.__init__(self, db_fname, result_name, **param_dict)
+    def __init__(self, db_fname, x, y, result_name="result", **param_dict):
+        FireAndForgetJob.__init__(self, db_fname, result_name,
+                                  x=x, y=y, **param_dict)
+        
+        self.x = x
+        self.y = y
     
     @abstractmethod
     def compute_result(self):
@@ -20,8 +25,8 @@ class MyFireAndForgetJob(FireAndForgetJob):
         There is no aggregators and no result instances being passed around at
         this point.
         """
-        sleep_time = np.random.randint(10)
+        sleep_time = np.random.randint(3)
         logger.info("sleeping for %d seconds" % sleep_time)
         sleep(sleep_time)
 
-        return sleep_time
+        return self.x**2 + self.y**2 + np.random.randn()*0.1
