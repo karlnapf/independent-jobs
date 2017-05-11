@@ -52,6 +52,7 @@ if __name__ == '__main__':
     
     batch_parameters = BatchClusterParameters(foldername=foldername)
     engine = SerialComputationEngine()
+#     engine = SlurmComputationEngine(batch_parameters)
     
     # here are some example parameters for jobs
     # we here create all combinations and then shuffle them
