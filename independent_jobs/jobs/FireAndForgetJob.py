@@ -169,11 +169,3 @@ class FireAndForgetJob(IndependentJob):
         submit_dict["_runtime"] = runtime
         submit_dict["_seed"] = self.seed
         store_results(self.db_fname, **submit_dict)
-
-class DummyFireAndForgetJob(FireAndForgetJob):
-    def __init__(self, db_fname, result_name="result", **param_dict):
-        FireAndForgetJob.__init__(self, db_fname, result_name, **param_dict)
-    
-    @abstractmethod
-    def compute_result(self):
-        return np.random.randn()

@@ -6,7 +6,7 @@ from independent_jobs.aggregators.JobResultAggregator import JobResultAggregator
 from independent_jobs.tools.FileSystem import FileSystem
 
 
-class PBSResultAggregatorWrapper(JobResultAggregator):
+class ResultAggregatorWrapper(JobResultAggregator):
     def __init__(self, wrapped_aggregator, filename, job_name, do_clean_up = False, store_fire_and_forget=False):
         self.wrapped_aggregator = wrapped_aggregator
         self.filename = filename

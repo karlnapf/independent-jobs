@@ -5,7 +5,7 @@ import pickle
 from popen2 import popen2
 import time
 
-from independent_jobs.aggregators.PBSResultAggregatorWrapper import PBSResultAggregatorWrapper
+from independent_jobs.aggregators.ResultAggregatorWrapper import ResultAggregatorWrapper
 from independent_jobs.engines.IndependentComputationEngine import IndependentComputationEngine
 from independent_jobs.tools.FileSystem import FileSystem
 from independent_jobs.tools.Log import logger
@@ -184,7 +184,7 @@ class BatchClusterComputationEngine(IndependentComputationEngine):
         job_name = self.create_job_name()
         
         aggregator_filename = self.get_aggregator_filename(job_name)
-        job.aggregator = PBSResultAggregatorWrapper(job.aggregator,
+        job.aggregator = ResultAggregatorWrapper(job.aggregator,
                                                     aggregator_filename,
                                                     job_name,
                                                     self.do_clean_up,
