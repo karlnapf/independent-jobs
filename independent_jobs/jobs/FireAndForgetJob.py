@@ -97,7 +97,12 @@ def extract_array(fname, param_names, result_name="result",
     
     # since not all parameter combinations might be computed, iterate and pull out computed ones
     all_combs = itertools.product(*[param_values[param_name] for param_name in param_names])
+    
     for index, comb in enumerate(all_combs):
+        # one element tuples should be the value itself
+        if len(comb)==1:
+            comb=comb[0]
+            
         result_ind = np.unravel_index(index, tuple(sizes))
 
         # parameter combination was computed
