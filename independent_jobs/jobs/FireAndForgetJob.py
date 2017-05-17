@@ -59,7 +59,8 @@ def store_results(fname, **kwargs):
                 portalocker.unlock(f)
                 logger.info("Unlocking %s" % fname)
     else:
-        df.to_csv(fname)
+        with open(fname, 'w+') as f:
+            df.to_csv(f)
 
 def extract_array(fname, param_names, result_name="result",
                   non_existing=np.nan, redux_funs=[np.nanmean], return_param_values=True,
