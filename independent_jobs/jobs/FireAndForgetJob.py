@@ -17,10 +17,7 @@ if StrictVersion(pd.__version__) < StrictVersion(pd_version_at_least):
         "pandas version you are using (%s). Upgrade to at least %s to get "\
         "rid of this message." % (pd.__version__, pd_version_at_least)
 
-try:
-    import portalocker
-except ImportError:
-    logger.warning("portalocker not found, using non-exclusive file access")
+from sqlalchemy import create_engine
 
 def store_results(fname, **kwargs):
     # create result dir if wanted
@@ -35,32 +32,9 @@ def store_results(fname, **kwargs):
     current_time = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
     columns = list(kwargs.keys())
     df = pd.DataFrame([[kwargs[k] for k in columns]], index=[current_time], columns=columns)
+    engine = create_engine('sqlite:///{}'.format(fname))
+    df.to_sql("FireAndForgetJob", engine, if_exists="append")
     
-    # check whether to append, re-write (since keys changed), or write from scratch
-    if os.path.exists(fname):
-        old_keys = pd.read_csv(fname, index_col=0, nrows=1).keys()
-        
-        if set(old_keys) == set(kwargs.keys()):
-            append = True
-        else:
-            old_df = pd.read_csv(fname, index_col=0, error_bad_lines=False)
-            df = old_df.append(df)
-            append = False
-    else:
-        append = False
-
-    if append:
-        with open(fname, 'a') as f:
-            if "portalocker" in sys.modules:
-                logger.info("Trying to lock %s" % fname)
-                portalocker.lock(f, portalocker.LOCK_EX)
-            df.to_csv(f, header=False)
-            if "portalocker" in sys.modules:
-                portalocker.unlock(f)
-                logger.info("Unlocking %s" % fname)
-    else:
-        with open(fname, 'w+') as f:
-            df.to_csv(f)
 
 def extract_array(fname, param_names, result_name="result",
                   non_existing=np.nan, redux_funs=[np.nanmean], return_param_values=True,
