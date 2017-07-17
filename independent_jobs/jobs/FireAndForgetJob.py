@@ -108,7 +108,7 @@ def best_parameters(db_fname, param_names, result_name, selector=np.nanmin,
                             param_names=param_names,
                             redux_funs=[redux_fun],
                             conditionals=conditionals,
-                            db_is_sqlite)
+                            db_is_sqlite=db_is_sqlite)
     
     results = results[0]
 
