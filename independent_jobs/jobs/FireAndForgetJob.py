@@ -53,6 +53,7 @@ def extract_array(fname, param_names, result_name="result",
     A default value can be specified.
     """
     if db_is_sqlite:
+        from sqlalchemy import create_engine
         engine = create_engine('sqlite:///{}'.format(fname))
         df = pd.read_sql_table("FireAndForgetJob", engine)
     else:
